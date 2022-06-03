@@ -20,8 +20,7 @@
     </style>
 
     <style name="StartVerticalBar">
-        <item name="android:layout_width">2dp</item>
-        <item name="android:layout_height">20dp</item>
+        <item name="android:layout_width">1dp</item>
         <item name="android:background">@color/primary_green</item>
     </style>
 

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DashboardFragment">
+    tools:context=".fragments.DashboardFragment">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_view"
@@ -21,7 +21,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="204dp">
 
             <TextView
                 android:id="@+id/mainPanelStepsLabel"
@@ -31,8 +31,10 @@
                 android:layout_marginTop="12dp"
                 android:text="@string/main_panel_steps_label"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                card_view:layout_constraintStart_toStartOf="parent"
+                android:typeface="normal"
+                card_view:layout_constraintStart_toEndOf="@+id/stepsVerticalDiv"
                 card_view:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -40,11 +42,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="28dp"
                 android:text="@string/main_panel_distance_label"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                card_view:layout_constraintStart_toStartOf="parent"
+                android:typeface="normal"
+                card_view:layout_constraintStart_toEndOf="@+id/distanceVerticalDiv"
                 card_view:layout_constraintTop_toBottomOf="@+id/mainPanelStepsPlaceholder" />
+
+            <TextView
+                android:id="@+id/mainPanelDistanceLabel2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="4dp"
+                android:text="Km"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textSize="10sp"
+                android:typeface="normal"
+                card_view:layout_constraintStart_toEndOf="@+id/mainPanelDistancePlaceholder"
+                card_view:layout_constraintTop_toBottomOf="@+id/mainPanelDistanceLabel" />
 
             <TextView
                 android:id="@+id/mainPanelDistancePlaceholder"
@@ -53,7 +73,10 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="2dp"
                 android:text="@string/initial_measurement"
-                card_view:layout_constraintStart_toStartOf="parent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                card_view:layout_constraintStart_toEndOf="@+id/distanceVerticalDiv"
                 card_view:layout_constraintTop_toBottomOf="@+id/mainPanelDistanceLabel" />
 
             <TextView
@@ -63,33 +86,96 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="2dp"
                 android:text="@string/initial_measurement"
-                card_view:layout_constraintStart_toStartOf="parent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                card_view:layout_constraintStart_toEndOf="@+id/stepsVerticalDiv"
                 card_view:layout_constraintTop_toBottomOf="@+id/mainPanelStepsLabel" />
 
             <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyle"
-                android:layout_width="80dp"
-                android:layout_height="92dp"
-                android:layout_marginTop="31dp"
-                android:layout_marginEnd="26dp"
+                android:id="@+id/progressBarStepsLeft"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="115dp"
+                android:layout_height="115dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="25dp"
+                android:max="100"
+                android:progress="50"
+                android:progressDrawable="@drawable/custom_progress"
                 card_view:layout_constraintEnd_toEndOf="parent"
                 card_view:layout_constraintTop_toTopOf="parent" />
 
             <View
+                android:id="@+id/view"
                 style="@style/Divider"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="30dp"
                 card_view:layout_constraintEnd_toEndOf="parent"
                 card_view:layout_constraintHorizontal_bias="0.0"
                 card_view:layout_constraintStart_toStartOf="parent"
-                card_view:layout_constraintTop_toBottomOf="@+id/progressBar" />
+                card_view:layout_constraintTop_toBottomOf="@+id/mainPanelDistancePlaceholder" />
 
             <View
+                android:id="@+id/stepsVerticalDiv"
                 style="@style/StartVerticalBar"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="74dp"
+                android:layout_height="35dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="12dp"
                 card_view:layout_constraintStart_toStartOf="parent"
                 card_view:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/distanceVerticalDiv"
+                style="@style/StartVerticalBar"
+                android:layout_height="35dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="77dp"
+                card_view:layout_constraintStart_toStartOf="parent"
+                card_view:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/progressBarStepsLeftPlaceholder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:text="64"
+                android:textColor="@color/primary_green"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                card_view:layout_constraintEnd_toEndOf="@+id/progressBarStepsLeft"
+                card_view:layout_constraintStart_toStartOf="@+id/progressBarStepsLeft"
+                card_view:layout_constraintTop_toTopOf="@+id/progressBarStepsLeft" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Steps Left"
+                android:textSize="10sp"
+                card_view:layout_constraintEnd_toEndOf="@+id/progressBarStepsLeft"
+                card_view:layout_constraintStart_toStartOf="@+id/progressBarStepsLeft"
+                card_view:layout_constraintTop_toBottomOf="@+id/progressBarStepsLeftPlaceholder" />
+
+            <ImageView
+                android:id="@+id/walkingStatusImage"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/stopped"
+                card_view:layout_constraintBottom_toBottomOf="parent"
+                card_view:layout_constraintStart_toStartOf="parent"
+                card_view:layout_constraintTop_toBottomOf="@+id/view" />
+
+            <TextView
+                android:id="@+id/walkingStatusPlaceholder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Try to walk for a bit..."
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textStyle="bold"
+                card_view:layout_constraintBottom_toBottomOf="parent"
+                card_view:layout_constraintStart_toEndOf="@+id/walkingStatusImage"
+                card_view:layout_constraintTop_toBottomOf="@+id/view" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

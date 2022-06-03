@@ -1,4 +1,4 @@
-package pt.ua.deti.tqs.android.healthspike;
+package pt.ua.deti.tqs.android.healthspike.viewmodels;
 
 import androidx.lifecycle.ViewModel;
 
