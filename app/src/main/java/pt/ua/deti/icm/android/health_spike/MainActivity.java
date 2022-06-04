@@ -1,7 +1,9 @@
-package pt.ua.deti.tqs.android.healthspike;
+package pt.ua.deti.icm.android.health_spike;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.app.PendingIntent;
@@ -28,15 +30,24 @@ import com.google.android.gms.location.ActivityTransitionRequest;
 import com.google.android.gms.location.ActivityTransitionResult;
 import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Wearable;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import pt.ua.deti.tqs.android.healthspike.fragments.DashboardFragment;
-import pt.ua.deti.tqs.android.healthspike.permissions.ActivityRecognitionPermission;
-import pt.ua.deti.tqs.android.healthspike.permissions.AppPermission;
-import pt.ua.deti.tqs.android.healthspike.viewmodels.PedometerViewModel;
+import pt.ua.deti.icm.android.health_spike.fragments.DashboardFragment;
+import pt.ua.deti.icm.android.health_spike.fragments.HeartRateFragment;
+import pt.ua.deti.icm.android.health_spike.permissions.ActivityRecognitionPermission;
+import pt.ua.deti.icm.android.health_spike.permissions.AppPermission;
+import pt.ua.deti.icm.android.health_spike.viewmodels.PedometerViewModel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -104,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         addPedometerObservers();
         initSensors();
+        initBottomNavBar();
         registerTransitions();
 
         // Initialize PendingIntent that will be triggered when a activity transition occurs.
@@ -147,6 +159,10 @@ public class MainActivity extends AppCompatActivity {
             TextView progressBarStepsLeftPlaceholder = findViewById(R.id.progressBarStepsLeftPlaceholder);
             ProgressBar progressBarStepsLeft = findViewById(R.id.progressBarStepsLeft);
 
+            if (value == null) return;
+
+            if (mainPanelStepsCount == null || progressBarStepsLeftPlaceholder == null || progressBarStepsLeft == null) return;
+
             mainPanelStepsCount.setText(String.valueOf(value));
             progressBarStepsLeft.setMax(dailySteps);
 
@@ -168,6 +184,27 @@ public class MainActivity extends AppCompatActivity {
                 mainPanelStepsCount.setImageResource(R.drawable.stopped);
         });
 
+    }
+
+    private void initBottomNavBar() {
+
+        BottomNavigationView bottomNavigationView;
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+            if (item.getItemId() == R.id.page_1) {
+                transaction.replace(R.id.main_fragment_container, DashboardFragment.newInstance());
+            } else if (item.getItemId() == R.id.page_2) {
+                transaction.replace(R.id.main_fragment_container, HeartRateFragment.newInstance());
+            }
+
+            transaction.commit();
+            return true;
+
+        });
     }
 
     /**
@@ -239,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     public class TransitionsReceiver extends BroadcastReceiver {
 
         @Override
@@ -271,6 +309,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
 
 }

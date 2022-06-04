@@ -1,4 +1,4 @@
-package pt.ua.deti.tqs.android.healthspike.permissions;
+package pt.ua.deti.icm.android.health_spike.permissions;
 
 import android.Manifest;
 import android.app.Activity;
@@ -21,7 +21,7 @@ public class ActivityRecognitionPermission extends AppPermission {
 
     @Override
     public boolean isGranted() {
-        return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_DENIED;
+        return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
 }

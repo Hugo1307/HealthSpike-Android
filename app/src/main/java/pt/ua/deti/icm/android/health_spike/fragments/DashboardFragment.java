@@ -1,4 +1,4 @@
-package pt.ua.deti.tqs.android.healthspike.fragments;
+package pt.ua.deti.icm.android.health_spike.fragments;
 
 import androidx.lifecycle.ViewModelProvider;
 
@@ -12,8 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import pt.ua.deti.tqs.android.healthspike.R;
-import pt.ua.deti.tqs.android.healthspike.viewmodels.DashboardViewModel;
+import pt.ua.deti.icm.android.health_spike.R;
+import pt.ua.deti.icm.android.health_spike.viewmodels.DashboardViewModel;
 
 public class DashboardFragment extends Fragment {
 
@@ -34,8 +34,6 @@ public class DashboardFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
         mViewModel = new ViewModelProvider(requireActivity()).get(DashboardViewModel.class);
-
-
 
     }
 

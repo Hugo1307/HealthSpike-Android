@@ -1,4 +1,4 @@
-package pt.ua.deti.tqs.android.healthspike.viewmodels;
+package pt.ua.deti.icm.android.health_spike.viewmodels;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;

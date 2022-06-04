@@ -5,4 +5,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="nearly_white">#FAFAFA</color>
+    <color name="primary_red">#FFFD5D5D</color>
+    <color name="secondary_red">#FFFF8080</color>
 </resources>

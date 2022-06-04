@@ -1,4 +1,4 @@
-package pt.ua.deti.tqs.android.healthspike.permissions;
+package pt.ua.deti.icm.android.health_spike.permissions;
 
 import android.app.Activity;
 

@@ -6,13 +6,20 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "pt.ua.deti.tqs.android.healthspike"
+        applicationId "pt.ua.deti.icm.android.health_spike"
         minSdk 29
         targetSdk 32
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+
     }
 
     buildTypes {
@@ -29,9 +36,8 @@ android {
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }
-}
 
-apply plugin: 'com.android.application'
+}
 
 dependencies {
 
@@ -47,5 +53,13 @@ dependencies {
 
     implementation 'com.google.api-client:google-api-client:1.32.1'
     implementation 'com.google.android.gms:play-services-location:19.0.1'
+    implementation 'com.google.android.gms:play-services-wearable:17.1.0'
+    implementation 'org.greenrobot:eventbus:3.3.1'
+
+    implementation "androidx.room:room-runtime:2.4.2"
+    annotationProcessor "androidx.room:room-compiler:2.4.2"
+    api "com.google.auto.value:auto-value-annotations:1.9"
+    annotationProcessor "com.google.auto.value:auto-value:1.9"
+
 
 }
