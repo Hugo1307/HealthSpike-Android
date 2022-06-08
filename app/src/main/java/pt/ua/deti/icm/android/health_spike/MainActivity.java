@@ -1,6 +1,5 @@
 package pt.ua.deti.icm.android.health_spike;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
@@ -30,19 +29,19 @@ import com.google.android.gms.location.ActivityTransitionRequest;
 import com.google.android.gms.location.ActivityTransitionResult;
 import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.wearable.DataClient;
-import com.google.android.gms.wearable.DataEvent;
-import com.google.android.gms.wearable.DataEventBuffer;
-import com.google.android.gms.wearable.MessageClient;
-import com.google.android.gms.wearable.MessageEvent;
-import com.google.android.gms.wearable.Wearable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import pt.ua.deti.icm.android.health_spike.data.dao.DailyStepsDao;
+import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
+import pt.ua.deti.icm.android.health_spike.data.entities.DailySteps;
 import pt.ua.deti.icm.android.health_spike.fragments.DashboardFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.HeartRateFragment;
 import pt.ua.deti.icm.android.health_spike.permissions.ActivityRecognitionPermission;
@@ -52,7 +51,7 @@ import pt.ua.deti.icm.android.health_spike.viewmodels.PedometerViewModel;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "HealthSpike";
-    private static final int dailySteps = 10000;
+    private static final int dailyStepsGoal = 10000;
 
     private PedometerViewModel pedometerViewModel;
 
@@ -60,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private List<ActivityTransition> activityTransitionList;
     private PendingIntent mActivityTransitionsPendingIntent;
     private boolean activityTrackingEnabled;
+
+    private DailyStepsDao dailyStepsDao;
 
     private final String TRANSITIONS_RECEIVER_ACTION = BuildConfig.APPLICATION_ID + "TRANSITIONS_RECEIVER_ACTION";
 
@@ -120,9 +121,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize PendingIntent that will be triggered when a activity transition occurs.
         Intent intent = new Intent(TRANSITIONS_RECEIVER_ACTION);
-        mActivityTransitionsPendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, intent, 0);
+        mActivityTransitionsPendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         mTransitionsReceiver = new TransitionsReceiver();
+
+        dailyStepsDao = AppDatabase.getInstance(getApplication()).dailyStepsDao();
 
     }
 
@@ -132,11 +135,23 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent sensorEvent) {
             if (sensorEvent.values == null || sensorEvent.values.length == 0)
                 return;
-            pedometerViewModel.getStepsCount().setValue((int) sensorEvent.values[0]);
+            dailyStepsDao.addStep();
         }
 
         @Override
-        public void onAccuracyChanged(Sensor sensor, int i) { }
+        public void onAccuracyChanged(Sensor sensor, int i) {
+
+            if (dailyStepsDao.getTodaySteps().getValue() == null) {
+
+                dailyStepsDao.createDailyStepsRegistry(
+                    new DailySteps(null, Date.from(LocalDateTime.now()
+                            .with(LocalDateTime.MIN)
+                            .atZone(ZoneId.systemDefault()).toInstant()), 0)
+                );
+
+            }
+
+        }
 
     };
 
@@ -153,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
         pedometerViewModel = new ViewModelProvider(this).get(PedometerViewModel.class);
 
-        pedometerViewModel.getStepsCount().observe(this, (value) -> {
+        pedometerViewModel.getDailySteps().observe(this, (value) -> {
 
             TextView mainPanelStepsCount = findViewById(R.id.mainPanelStepsPlaceholder);
             TextView progressBarStepsLeftPlaceholder = findViewById(R.id.progressBarStepsLeftPlaceholder);
@@ -163,15 +178,17 @@ public class MainActivity extends AppCompatActivity {
 
             if (mainPanelStepsCount == null || progressBarStepsLeftPlaceholder == null || progressBarStepsLeft == null) return;
 
-            mainPanelStepsCount.setText(String.valueOf(value));
-            progressBarStepsLeft.setMax(dailySteps);
+            int dailyStepsCount = value.stepsCount;
 
-            if (dailySteps > value) {
-                progressBarStepsLeftPlaceholder.setText(String.valueOf(dailySteps-value));
-                progressBarStepsLeft.setProgress(dailySteps-(dailySteps-value));
+            mainPanelStepsCount.setText(String.valueOf(dailyStepsCount));
+            progressBarStepsLeft.setMax(dailyStepsGoal);
+
+            if (dailyStepsGoal > dailyStepsCount) {
+                progressBarStepsLeftPlaceholder.setText(String.valueOf(dailyStepsGoal - dailyStepsCount));
+                progressBarStepsLeft.setProgress(dailyStepsGoal -(dailyStepsGoal - dailyStepsCount));
             } else {
-                progressBarStepsLeftPlaceholder.setText(String.valueOf(value));
-                progressBarStepsLeft.setProgress(dailySteps);
+                progressBarStepsLeftPlaceholder.setText(String.valueOf(dailyStepsCount));
+                progressBarStepsLeft.setProgress(dailyStepsGoal);
             }
 
         });

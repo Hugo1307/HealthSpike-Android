@@ -28,8 +28,6 @@
                 android:layout_marginStart="35dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="35dp"
-                android:layout_marginBottom="30dp"
-                card_view:layout_constraintBottom_toBottomOf="parent"
                 card_view:layout_constraintEnd_toEndOf="parent"
                 card_view:layout_constraintStart_toStartOf="parent"
                 card_view:layout_constraintTop_toTopOf="parent">
@@ -39,7 +37,7 @@
                     android:layout_height="204dp">
 
                     <TextView
-                        android:id="@+id/heartRatePanelTile"
+                        android:id="@+id/mainPanelStepsLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -105,7 +103,7 @@
                         android:textSize="12sp"
                         android:textStyle="bold"
                         card_view:layout_constraintStart_toEndOf="@+id/stepsVerticalDiv"
-                        card_view:layout_constraintTop_toBottomOf="@+id/heartRatePanelTile" />
+                        card_view:layout_constraintTop_toBottomOf="@+id/mainPanelStepsLabel" />
 
                     <ProgressBar
                         android:id="@+id/progressBarStepsLeft"
@@ -121,7 +119,7 @@
                         card_view:layout_constraintTop_toTopOf="parent" />
 
                     <View
-                        android:id="@+id/view"
+                        android:id="@+id/horizontalSeparator"
                         style="@style/Divider"
                         android:layout_marginTop="30dp"
                         card_view:layout_constraintEnd_toEndOf="parent"
@@ -178,7 +176,7 @@
                         android:src="@drawable/stopped"
                         card_view:layout_constraintBottom_toBottomOf="parent"
                         card_view:layout_constraintStart_toStartOf="parent"
-                        card_view:layout_constraintTop_toBottomOf="@+id/view" />
+                        card_view:layout_constraintTop_toBottomOf="@+id/horizontalSeparator" />
 
                     <TextView
                         android:id="@+id/walkingStatusPlaceholder"
@@ -190,7 +188,176 @@
                         android:textStyle="bold"
                         card_view:layout_constraintBottom_toBottomOf="parent"
                         card_view:layout_constraintStart_toEndOf="@+id/walkingStatusImage"
+                        card_view:layout_constraintTop_toBottomOf="@+id/horizontalSeparator" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/heart_rate_card_view"
+                style="@style/MyCardView"
+                android:layout_width="0dp"
+                android:layout_height="190dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="35dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginEnd="35dp"
+                android:layout_marginBottom="30dp"
+                card_view:layout_constraintBottom_toBottomOf="parent"
+                card_view:layout_constraintEnd_toEndOf="parent"
+                card_view:layout_constraintStart_toStartOf="parent"
+                card_view:layout_constraintTop_toBottomOf="@+id/card_view">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="166dp">
+
+                    <TextView
+                        android:id="@+id/heartRateAvgPlaceholder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="79.0"
+                        android:textColor="@color/secondary_red"
+                        android:textSize="15sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMinPlaceholder"
+                        card_view:layout_constraintEnd_toStartOf="@+id/textView7" />
+
+                    <TextView
+                        android:id="@+id/textView9"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Average"
+                        android:textSize="12sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/textView6"
+                        card_view:layout_constraintEnd_toEndOf="@+id/textView7" />
+
+                    <TextView
+                        android:id="@+id/heartRateMinPlaceholder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-20dp"
+                        android:text="78.0"
+                        android:textColor="@color/secondary_red"
+                        android:textSize="15sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMaxPlaceholder"
+                        card_view:layout_constraintStart_toStartOf="@+id/textView6" />
+
+                    <TextView
+                        android:id="@+id/textView6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Min"
+                        android:textSize="12sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/textView5"
+                        card_view:layout_constraintEnd_toEndOf="parent"
+                        card_view:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/heartRatePanelTile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginTop="8dp"
+                        android:text="Heart Rate"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textSize="16sp"
+                        android:typeface="normal"
+                        card_view:layout_constraintStart_toStartOf="parent"
+                        card_view:layout_constraintTop_toTopOf="parent" />
+
+                    <View
+                        android:id="@+id/view"
+                        style="@style/Divider"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginEnd="8dp"
+                        card_view:layout_constraintEnd_toEndOf="parent"
+                        card_view:layout_constraintHorizontal_bias="0.0"
+                        card_view:layout_constraintStart_toStartOf="parent"
+                        card_view:layout_constraintTop_toBottomOf="@+id/heartRateMainPlaceholder" />
+
+                    <TextView
+                        android:id="@+id/heartRateMainPlaceholder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginTop="16dp"
+                        android:text="81.0"
+                        android:textColor="@color/primary_red"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        card_view:layout_constraintStart_toStartOf="parent"
+                        card_view:layout_constraintTop_toBottomOf="@+id/heartRatePanelTile" />
+
+                    <TextView
+                        android:id="@+id/heartRateMaxPlaceholder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="16dp"
+                        android:text="81.0"
+                        android:textColor="@color/secondary_red"
+                        android:textSize="15sp"
+                        card_view:layout_constraintStart_toStartOf="parent"
                         card_view:layout_constraintTop_toBottomOf="@+id/view" />
+
+                    <TextView
+                        android:id="@+id/textView5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Max"
+                        android:textSize="12sp"
+                        card_view:layout_constraintStart_toStartOf="@+id/heartRateMaxPlaceholder"
+                        card_view:layout_constraintTop_toBottomOf="@+id/heartRateMaxPlaceholder" />
+
+                    <TextView
+                        android:id="@+id/textView3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="bpm"
+                        android:textColor="@color/primary_red"
+                        android:textSize="18sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMainPlaceholder"
+                        card_view:layout_constraintStart_toEndOf="@+id/heartRateMainPlaceholder" />
+
+                    <TextView
+                        android:id="@+id/textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="bpm"
+                        android:textColor="@color/secondary_red"
+                        android:textSize="12sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMaxPlaceholder"
+                        card_view:layout_constraintStart_toEndOf="@+id/heartRateMaxPlaceholder" />
+
+                    <TextView
+                        android:id="@+id/textView4"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="-20dp"
+                        android:text="bpm"
+                        android:textColor="@color/secondary_red"
+                        android:textSize="12sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMinPlaceholder"
+                        card_view:layout_constraintEnd_toEndOf="@+id/textView6"
+                        card_view:layout_constraintStart_toEndOf="@+id/heartRateMinPlaceholder" />
+
+                    <TextView
+                        android:id="@+id/textView7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="bpm"
+                        android:textColor="@color/secondary_red"
+                        android:textSize="12sp"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateAvgPlaceholder"
+                        card_view:layout_constraintEnd_toEndOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
