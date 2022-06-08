@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.HeartRateFragment">
+    tools:context=".fragments.DistanceFragment">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_view"
@@ -27,29 +27,30 @@
                 android:id="@+id/heartRateAvgPlaceholder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:text="79.0"
-                android:textColor="@color/secondary_red"
-                android:textSize="15sp"
-                card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMinPlaceholder"
-                card_view:layout_constraintEnd_toStartOf="@+id/textView7" />
+                android:layout_marginEnd="8dp"
+                android:text="-1.23456"
+                android:textColor="@color/primary_blue"
+                android:textSize="10sp"
+                card_view:layout_constraintEnd_toEndOf="parent"
+                card_view:layout_constraintTop_toBottomOf="@+id/textView10" />
 
             <TextView
                 android:id="@+id/textView9"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Average"
+                android:layout_marginEnd="8dp"
+                android:text="Location"
                 android:textSize="12sp"
                 card_view:layout_constraintBaseline_toBaselineOf="@+id/textView6"
-                card_view:layout_constraintEnd_toEndOf="@+id/textView7" />
+                card_view:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/heartRateMinPlaceholder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="-20dp"
-                android:text="78.0"
-                android:textColor="@color/secondary_red"
+                android:text="1.42"
+                android:textColor="@color/primary_blue"
                 android:textSize="15sp"
                 card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMaxPlaceholder"
                 card_view:layout_constraintStart_toStartOf="@+id/textView6" />
@@ -58,7 +59,7 @@
                 android:id="@+id/textView6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Min"
+                android:text="Week"
                 android:textSize="12sp"
                 card_view:layout_constraintBaseline_toBaselineOf="@+id/textView5"
                 card_view:layout_constraintEnd_toEndOf="parent"
@@ -70,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_marginTop="8dp"
-                android:text="Heart Rate"
+                android:text="Today's Distance"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                 android:textSize="16sp"
                 android:typeface="normal"
@@ -94,8 +95,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_marginTop="16dp"
-                android:text="81.0"
-                android:textColor="@color/primary_red"
+                android:text="0.30"
+                android:textColor="@color/primary_blue"
                 android:textSize="32sp"
                 android:textStyle="bold"
                 card_view:layout_constraintStart_toStartOf="parent"
@@ -107,8 +108,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
-                android:text="81.0"
-                android:textColor="@color/secondary_red"
+                android:text="0.21"
+                android:textColor="@color/primary_blue"
                 android:textSize="15sp"
                 card_view:layout_constraintStart_toStartOf="parent"
                 card_view:layout_constraintTop_toBottomOf="@+id/view" />
@@ -118,7 +119,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Max"
+                android:text="Total"
                 android:textSize="12sp"
                 card_view:layout_constraintStart_toStartOf="@+id/heartRateMaxPlaceholder"
                 card_view:layout_constraintTop_toBottomOf="@+id/heartRateMaxPlaceholder" />
@@ -128,8 +129,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="bpm"
-                android:textColor="@color/primary_red"
+                android:text="Km"
+                android:textColor="@color/primary_blue"
                 android:textSize="18sp"
                 card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMainPlaceholder"
                 card_view:layout_constraintStart_toEndOf="@+id/heartRateMainPlaceholder" />
@@ -139,8 +140,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:text="bpm"
-                android:textColor="@color/secondary_red"
+                android:text="Km"
+                android:textColor="@color/primary_blue"
                 android:textSize="12sp"
                 card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMaxPlaceholder"
                 card_view:layout_constraintStart_toEndOf="@+id/heartRateMaxPlaceholder" />
@@ -151,23 +152,24 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="-20dp"
-                android:text="bpm"
-                android:textColor="@color/secondary_red"
+                android:text="Km"
+                android:textColor="@color/primary_blue"
                 android:textSize="12sp"
                 card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMinPlaceholder"
                 card_view:layout_constraintEnd_toEndOf="@+id/textView6"
                 card_view:layout_constraintStart_toEndOf="@+id/heartRateMinPlaceholder" />
 
             <TextView
-                android:id="@+id/textView7"
+                android:id="@+id/textView10"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="13dp"
                 android:layout_marginEnd="8dp"
-                android:text="bpm"
-                android:textColor="@color/secondary_red"
-                android:textSize="12sp"
-                card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateAvgPlaceholder"
-                card_view:layout_constraintEnd_toEndOf="parent" />
+                android:text="-1.23456"
+                android:textColor="@color/primary_blue"
+                android:textSize="10sp"
+                card_view:layout_constraintEnd_toEndOf="parent"
+                card_view:layout_constraintTop_toBottomOf="@+id/view" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
