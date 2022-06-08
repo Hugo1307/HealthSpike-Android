@@ -43,7 +43,9 @@ import pt.ua.deti.icm.android.health_spike.data.dao.DailyStepsDao;
 import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
 import pt.ua.deti.icm.android.health_spike.data.entities.DailySteps;
 import pt.ua.deti.icm.android.health_spike.fragments.DashboardFragment;
+import pt.ua.deti.icm.android.health_spike.fragments.DistanceFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.HeartRateFragment;
+import pt.ua.deti.icm.android.health_spike.fragments.StepsFragment;
 import pt.ua.deti.icm.android.health_spike.permissions.ActivityRecognitionPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.AppPermission;
 import pt.ua.deti.icm.android.health_spike.viewmodels.PedometerViewModel;
@@ -216,6 +218,10 @@ public class MainActivity extends AppCompatActivity {
                 transaction.replace(R.id.main_fragment_container, DashboardFragment.newInstance());
             } else if (item.getItemId() == R.id.page_2) {
                 transaction.replace(R.id.main_fragment_container, HeartRateFragment.newInstance());
+            } else if (item.getItemId() == R.id.page_3) {
+                transaction.replace(R.id.main_fragment_container, StepsFragment.newInstance());
+            } else if (item.getItemId() == R.id.page_4) {
+                transaction.replace(R.id.main_fragment_container, DistanceFragment.newInstance());
             }
 
             transaction.commit();

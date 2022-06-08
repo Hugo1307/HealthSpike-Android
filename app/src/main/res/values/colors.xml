@@ -7,4 +7,5 @@
     <color name="nearly_white">#FAFAFA</color>
     <color name="primary_red">#FFFD5D5D</color>
     <color name="secondary_red">#FFFF8080</color>
+    <color name="primary_blue">#00B6F0</color>
 </resources>
