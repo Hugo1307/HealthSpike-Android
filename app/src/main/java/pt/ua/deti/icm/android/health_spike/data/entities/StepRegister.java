@@ -9,9 +9,9 @@ import java.util.Date;
 
 import pt.ua.deti.icm.android.health_spike.data.converters.DateConverter;
 
-@Entity(tableName = "daily_steps")
+@Entity(tableName = "steps")
 @TypeConverters(DateConverter.class)
-public class DailySteps {
+public class StepRegister {
 
     @PrimaryKey
     public Long id;
@@ -19,13 +19,9 @@ public class DailySteps {
     @ColumnInfo(name = "timestamp")
     public Date timestamp;
 
-    @ColumnInfo(name = "steps_count")
-    public Integer stepsCount;
-
-    public DailySteps(Long id, Date timestamp, Integer stepsCount) {
+    public StepRegister(Long id, Date timestamp) {
         this.id = id;
         this.timestamp = timestamp;
-        this.stepsCount = stepsCount;
     }
 
 }

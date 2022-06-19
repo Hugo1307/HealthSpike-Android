@@ -1,9 +1,6 @@
 package pt.ua.deti.icm.android.health_spike.connectivity;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
-import androidx.room.Room;
 
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
@@ -17,7 +14,6 @@ import pt.ua.deti.icm.android.health_spike.data.entities.HeartRateMeasurement;
 
 public class ConnectivityListenerService extends WearableListenerService {
 
-    private static final String TAG = "HealthSpike";
     private AppDatabase appDatabase;
 
     @Override

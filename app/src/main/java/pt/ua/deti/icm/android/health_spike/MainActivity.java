@@ -17,9 +17,6 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.ActivityRecognition;
@@ -32,37 +29,47 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
-import pt.ua.deti.icm.android.health_spike.data.dao.DailyStepsDao;
+import pt.ua.deti.icm.android.health_spike.data.dao.StepsDao;
 import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
-import pt.ua.deti.icm.android.health_spike.data.entities.DailySteps;
+import pt.ua.deti.icm.android.health_spike.data.entities.StepRegister;
 import pt.ua.deti.icm.android.health_spike.fragments.DashboardFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.DistanceFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.HeartRateFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.StepsFragment;
 import pt.ua.deti.icm.android.health_spike.permissions.ActivityRecognitionPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.AppPermission;
-import pt.ua.deti.icm.android.health_spike.viewmodels.PedometerViewModel;
+import pt.ua.deti.icm.android.health_spike.viewmodels.StepsViewModel;
+import pt.ua.deti.icm.android.health_spike.viewmodels.WeatherForecastViewModel;
+import pt.ua.deti.icm.android.health_spike.weather_api.entities.WeatherForecastEntity;
+import pt.ua.deti.icm.android.health_spike.weather_api.model.WeatherModel;
+import pt.ua.deti.icm.android.health_spike.weather_api.model.WeatherTypeModel;
+import pt.ua.deti.icm.android.health_spike.weather_api.model.WindModel;
+import pt.ua.deti.icm.android.health_spike.weather_api.network.IPMAWeatherClient;
+import pt.ua.deti.icm.android.health_spike.weather_api.network.listeners.CityForecastListener;
+import pt.ua.deti.icm.android.health_spike.weather_api.network.listeners.WeatherTypesListener;
+import pt.ua.deti.icm.android.health_spike.weather_api.network.listeners.WindTypesListener;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "HealthSpike";
-    private static final int dailyStepsGoal = 10000;
 
-    private PedometerViewModel pedometerViewModel;
+    private WeatherForecastViewModel weatherForecastViewModel;
+    private StepsViewModel stepsViewModel;
 
     private TransitionsReceiver mTransitionsReceiver;
     private List<ActivityTransition> activityTransitionList;
     private PendingIntent mActivityTransitionsPendingIntent;
     private boolean activityTrackingEnabled;
 
-    private DailyStepsDao dailyStepsDao;
+    private StepsDao stepsDao;
 
     private final String TRANSITIONS_RECEIVER_ACTION = BuildConfig.APPLICATION_ID + "TRANSITIONS_RECEIVER_ACTION";
 
@@ -116,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
         AppPermission activityRecognitionPermission = new ActivityRecognitionPermission(this);
         activityRecognitionPermission.askPermission();
 
-        addPedometerObservers();
         initSensors();
         initBottomNavBar();
         registerTransitions();
@@ -127,7 +133,62 @@ public class MainActivity extends AppCompatActivity {
 
         mTransitionsReceiver = new TransitionsReceiver();
 
-        dailyStepsDao = AppDatabase.getInstance(getApplication()).dailyStepsDao();
+        stepsDao = AppDatabase.getInstance(getApplication()).dailyStepsDao();
+
+        weatherForecastViewModel = new ViewModelProvider(this).get(WeatherForecastViewModel.class);
+        stepsViewModel = new ViewModelProvider(this).get(StepsViewModel.class);
+
+        IPMAWeatherClient ipmaWeatherClient = new IPMAWeatherClient();
+
+        new Thread(() -> {
+
+            ipmaWeatherClient.retrieveForecastForCity(1010500, new CityForecastListener() {
+
+                @Override
+                public void receiveForecastList(List<WeatherModel> forecast) {
+
+
+                    ipmaWeatherClient.retrieveWeatherConditionsDescriptions(new WeatherTypesListener() {
+
+                        @Override
+                        public void receiveWeatherTypesList(HashMap<Integer, WeatherTypeModel> weatherTypeModelHashMap) {
+
+                            ipmaWeatherClient.retrieveWindConditionsDescriptions(new WindTypesListener() {
+
+                                @Override
+                                public void receiveWeatherTypesList(HashMap<String, WindModel> windModelHashMap) {
+
+                                    weatherForecastViewModel.getForecastWeather().setValue(forecast.stream().map(weatherModel -> new WeatherForecastEntity("Aveiro", weatherModel.getForecastDate(), weatherModel.getPrecipitaProb(),
+                                            weatherModel.getTMin(), weatherModel.getTMax(), weatherModel.getPredWindDir(),
+                                            weatherTypeModelHashMap.get(weatherModel.getIdWeatherType()).getDescIdWeatherTypeEN(), windModelHashMap.get(String.valueOf(weatherModel.getClassWindSpeed())).getWindSpeedDescription(), weatherModel.getLastRefresh()))
+                                            .collect(Collectors.toList()));
+
+                                }
+
+                                @Override
+                                public void onFailure(Throwable cause) {
+                                    Log.w(TAG, "Failed to get wind types list.");
+                                }
+
+                            });
+
+                        }
+
+                        @Override
+                        public void onFailure(Throwable cause) {
+                            Log.w(TAG, "Failed to get weather types list.");
+                        }
+
+                    });
+                }
+
+                @Override
+                public void onFailure(Throwable cause) {
+                    Log.w(TAG, "Failed to get weather prediction.");
+                }
+            });
+
+        }).start();
 
     }
 
@@ -137,22 +198,12 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged(SensorEvent sensorEvent) {
             if (sensorEvent.values == null || sensorEvent.values.length == 0)
                 return;
-            dailyStepsDao.addStep();
+            CompletableFuture.runAsync(() -> stepsDao.addStep(new StepRegister(null, Date.from(Instant.now()))));
         }
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) {
-
-            if (dailyStepsDao.getTodaySteps().getValue() == null) {
-
-                dailyStepsDao.createDailyStepsRegistry(
-                    new DailySteps(null, Date.from(LocalDateTime.now()
-                            .with(LocalDateTime.MIN)
-                            .atZone(ZoneId.systemDefault()).toInstant()), 0)
-                );
-
-            }
-
+            Log.i(TAG, "Steps Sensor accuracy changed.");
         }
 
     };
@@ -166,49 +217,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void addPedometerObservers() {
-
-        pedometerViewModel = new ViewModelProvider(this).get(PedometerViewModel.class);
-
-        pedometerViewModel.getDailySteps().observe(this, (value) -> {
-
-            TextView mainPanelStepsCount = findViewById(R.id.mainPanelStepsPlaceholder);
-            TextView progressBarStepsLeftPlaceholder = findViewById(R.id.progressBarStepsLeftPlaceholder);
-            ProgressBar progressBarStepsLeft = findViewById(R.id.progressBarStepsLeft);
-
-            if (value == null) return;
-
-            if (mainPanelStepsCount == null || progressBarStepsLeftPlaceholder == null || progressBarStepsLeft == null) return;
-
-            int dailyStepsCount = value.stepsCount;
-
-            mainPanelStepsCount.setText(String.valueOf(dailyStepsCount));
-            progressBarStepsLeft.setMax(dailyStepsGoal);
-
-            if (dailyStepsGoal > dailyStepsCount) {
-                progressBarStepsLeftPlaceholder.setText(String.valueOf(dailyStepsGoal - dailyStepsCount));
-                progressBarStepsLeft.setProgress(dailyStepsGoal -(dailyStepsGoal - dailyStepsCount));
-            } else {
-                progressBarStepsLeftPlaceholder.setText(String.valueOf(dailyStepsCount));
-                progressBarStepsLeft.setProgress(dailyStepsGoal);
-            }
-
-        });
-
-        pedometerViewModel.getIsWalking().observe(this, (value) -> {
-            ImageView mainPanelStepsCount = findViewById(R.id.walkingStatusImage);
-            if (value)
-                mainPanelStepsCount.setImageResource(R.drawable.walking);
-            else
-                mainPanelStepsCount.setImageResource(R.drawable.stopped);
-        });
-
-    }
-
     private void initBottomNavBar() {
 
-        BottomNavigationView bottomNavigationView;
-        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
 
@@ -242,17 +253,8 @@ public class MainActivity extends AppCompatActivity {
         // Register for Transitions Updates.
         Task<Void> task = ActivityRecognition.getClient(this).requestActivityTransitionUpdates(request, mActivityTransitionsPendingIntent);
 
-        task.addOnSuccessListener(
-                result -> {
-                    activityTrackingEnabled = true;
-                    // Toast.makeText(getApplicationContext(), "Transitions Api was successfully registered", Toast.LENGTH_SHORT).show();
-                });
-
-        task.addOnFailureListener(
-                exception -> {
-                    // Toast.makeText(getApplicationContext(), "Transitions Api could NOT be registered: " + exception, Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Transitions Api could NOT be registered: " + exception);
-                });
+        task.addOnSuccessListener(result -> activityTrackingEnabled = true);
+        task.addOnFailureListener(exception -> Log.e(TAG, "Transitions Api could NOT be registered: " + exception));
 
     }
 
@@ -320,9 +322,9 @@ public class MainActivity extends AppCompatActivity {
                 for (ActivityTransitionEvent event : result.getTransitionEvents()) {
 
                     if (event.getActivityType() == DetectedActivity.WALKING && event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
-                        pedometerViewModel.getIsWalking().setValue(true);
+                        stepsViewModel.getIsWalking().setValue(true);
                     } else if (event.getActivityType() == DetectedActivity.WALKING && event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_EXIT) {
-                        pedometerViewModel.getIsWalking().setValue(false);
+                        stepsViewModel.getIsWalking().setValue(false);
                     }
 
                 }

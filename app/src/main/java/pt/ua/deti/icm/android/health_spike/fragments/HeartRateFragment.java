@@ -45,7 +45,28 @@ public class HeartRateFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         heartRateViewModel = new ViewModelProvider(this).get(HeartRateViewModel.class);
+
+        setHRData(view);
         registerObservers(view);
+
+    }
+
+    private void setHRData(View view) {
+
+        TextView heartRateMainPlaceholder = view.findViewById(R.id.heartRateMainPlaceholder);
+        TextView maxHeartRatePlaceholder = view.findViewById(R.id.maxHeartRatePlaceholder);
+        TextView minHeartRatePlaceholder = view.findViewById(R.id.minHeartRatePlaceholder);
+        TextView averageHeartRatePlaceholder = view.findViewById(R.id.avgHeartRatePlaceholder);
+
+        String mostRecentHR = heartRateViewModel.getMostRecentHeartRate().getValue() != null ? String.valueOf(heartRateViewModel.getMostRecentHeartRate().getValue()) : "0.0";
+        String maxHR = heartRateViewModel.getMaxHeartRate().getValue() != null ? String.valueOf(heartRateViewModel.getMaxHeartRate().getValue()) : "0.0";
+        String minHR = heartRateViewModel.getMinHeartRate().getValue() != null ? String.valueOf(heartRateViewModel.getMinHeartRate().getValue()) : "0.0";
+        String avgHR = heartRateViewModel.getAverageHeartRate().getValue() != null ? String.valueOf(heartRateViewModel.getAverageHeartRate().getValue()) : "0.0";
+
+        heartRateMainPlaceholder.setText(mostRecentHR);
+        maxHeartRatePlaceholder.setText(maxHR);
+        minHeartRatePlaceholder.setText(minHR);
+        averageHeartRatePlaceholder.setText(avgHR);
 
     }
 
@@ -56,15 +77,15 @@ public class HeartRateFragment extends Fragment {
         );
 
         heartRateViewModel.getMaxHeartRate().observe(getViewLifecycleOwner(), maxHeartRate ->
-                ((TextView) view.findViewById(R.id.heartRateMaxPlaceholder)).setText(maxHeartRate != null ? String.valueOf(maxHeartRate) : "0.0")
+                ((TextView) view.findViewById(R.id.maxHeartRatePlaceholder)).setText(maxHeartRate != null ? String.valueOf(maxHeartRate) : "0.0")
         );
 
         heartRateViewModel.getMinHeartRate().observe(getViewLifecycleOwner(), minHeartRate ->
-                ((TextView) view.findViewById(R.id.heartRateMinPlaceholder)).setText(minHeartRate != null ? String.valueOf(minHeartRate) : "0.0")
+                ((TextView) view.findViewById(R.id.minHeartRatePlaceholder)).setText(minHeartRate != null ? String.valueOf(minHeartRate) : "0.0")
         );
 
         heartRateViewModel.getAverageHeartRate().observe(getViewLifecycleOwner(), avgHeartRate ->
-                ((TextView) view.findViewById(R.id.heartRateAvgPlaceholder)).setText(avgHeartRate != null ? new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ENGLISH)).format(avgHeartRate) : "0.0")
+                ((TextView) view.findViewById(R.id.avgHeartRatePlaceholder)).setText(avgHeartRate != null ? new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ENGLISH)).format(avgHeartRate) : "0.0")
         );
 
     }
