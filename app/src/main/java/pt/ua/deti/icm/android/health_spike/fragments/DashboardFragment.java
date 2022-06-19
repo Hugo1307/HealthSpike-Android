@@ -121,19 +121,19 @@ public class DashboardFragment extends Fragment {
     private void registerHRObservers(View view) {
 
         heartRateViewModel.getMostRecentHeartRate().observe(getViewLifecycleOwner(), currentHeartRate ->
-                ((TextView) view.findViewById(R.id.stepsMainPlaceholder)).setText(currentHeartRate != null ? String.valueOf(currentHeartRate.value) : "0.0")
+                ((TextView) view.findViewById(R.id.heartRateMainPlaceholder)).setText(currentHeartRate != null ? String.valueOf(currentHeartRate.value) : "0.0")
         );
 
         heartRateViewModel.getMaxHeartRate().observe(getViewLifecycleOwner(), maxHeartRate ->
-                ((TextView) view.findViewById(R.id.yesterdayStepsPlaceholder)).setText(maxHeartRate != null ? String.valueOf(maxHeartRate) : "0.0")
+                ((TextView) view.findViewById(R.id.maxHeartRatePlaceholder)).setText(maxHeartRate != null ? String.valueOf(maxHeartRate) : "0.0")
         );
 
         heartRateViewModel.getMinHeartRate().observe(getViewLifecycleOwner(), minHeartRate ->
-                ((TextView) view.findViewById(R.id.weekStepsPlaceholder)).setText(minHeartRate != null ? String.valueOf(minHeartRate) : "0.0")
+                ((TextView) view.findViewById(R.id.minHeartRatePlaceholder)).setText(minHeartRate != null ? String.valueOf(minHeartRate) : "0.0")
         );
 
         heartRateViewModel.getAverageHeartRate().observe(getViewLifecycleOwner(), avgHeartRate ->
-                ((TextView) view.findViewById(R.id.allStepsPlaceholder)).setText(avgHeartRate != null ? new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ENGLISH)).format(avgHeartRate) : "0.0")
+                ((TextView) view.findViewById(R.id.avgHeartRatePlaceholder)).setText(avgHeartRate != null ? new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ENGLISH)).format(avgHeartRate) : "0.0")
         );
 
     }

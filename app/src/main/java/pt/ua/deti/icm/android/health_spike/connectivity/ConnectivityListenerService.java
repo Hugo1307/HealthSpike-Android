@@ -11,10 +11,13 @@ import java.time.Instant;
 
 import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
 import pt.ua.deti.icm.android.health_spike.data.entities.HeartRateMeasurement;
+import pt.ua.deti.icm.android.health_spike.notifications.channels.HeartRateNotificationChannel;
 
 public class ConnectivityListenerService extends WearableListenerService {
 
     private AppDatabase appDatabase;
+
+    private long lastWarningTimestamp = 0;
 
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
@@ -31,6 +34,18 @@ public class ConnectivityListenerService extends WearableListenerService {
             double heartRate = Double.parseDouble(messagePayload);
 
             if (heartRate == 0) return;
+
+            // Only send notification every 30 seconds
+            if (heartRate >= 100 && (System.currentTimeMillis() - lastWarningTimestamp) > 30*1000) {
+
+                HeartRateNotificationChannel heartRateNotificationChannel = new HeartRateNotificationChannel();
+                heartRateNotificationChannel.registerChannel(this);
+                heartRateNotificationChannel.sendNotification(this, "Heart Rate Monitor", "Be Careful! Your heart rate is very high.", true);
+
+                lastWarningTimestamp = System.currentTimeMillis();
+
+            }
+
             appDatabase.heartRateMeasurementDao().insertMeasurement(new HeartRateMeasurement(Date.from(Instant.now()), heartRate));
 
         }

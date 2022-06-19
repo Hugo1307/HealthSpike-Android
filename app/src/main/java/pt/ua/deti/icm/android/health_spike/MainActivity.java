@@ -2,9 +2,13 @@ package pt.ua.deti.icm.android.health_spike;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,6 +18,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -34,6 +39,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -44,6 +50,7 @@ import pt.ua.deti.icm.android.health_spike.fragments.DashboardFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.DistanceFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.HeartRateFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.StepsFragment;
+import pt.ua.deti.icm.android.health_spike.notifications.channels.HeartRateNotificationChannel;
 import pt.ua.deti.icm.android.health_spike.permissions.ActivityRecognitionPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.AppPermission;
 import pt.ua.deti.icm.android.health_spike.viewmodels.StepsViewModel;
@@ -60,6 +67,9 @@ import pt.ua.deti.icm.android.health_spike.weather_api.network.listeners.WindTyp
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "HealthSpike";
+    private static final String CHANNEL_ID = "HealthSpike_NOTIFICATIONS";
+
+    private int notificationId = 0;
 
     private WeatherForecastViewModel weatherForecastViewModel;
     private StepsViewModel stepsViewModel;
@@ -122,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
 
         AppPermission activityRecognitionPermission = new ActivityRecognitionPermission(this);
         activityRecognitionPermission.askPermission();
+
+        new HeartRateNotificationChannel().registerChannel(this);
 
         initSensors();
         initBottomNavBar();

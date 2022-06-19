@@ -214,14 +214,14 @@
                     android:layout_height="166dp">
 
                     <TextView
-                        android:id="@+id/allStepsPlaceholder"
+                        android:id="@+id/avgHeartRatePlaceholder"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
                         android:text="79.0"
                         android:textColor="@color/secondary_red"
                         android:textSize="15sp"
-                        card_view:layout_constraintBaseline_toBaselineOf="@+id/weekStepsPlaceholder"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/minHeartRatePlaceholder"
                         card_view:layout_constraintEnd_toStartOf="@+id/textView7" />
 
                     <TextView
@@ -234,14 +234,14 @@
                         card_view:layout_constraintEnd_toEndOf="@+id/textView7" />
 
                     <TextView
-                        android:id="@+id/weekStepsPlaceholder"
+                        android:id="@+id/minHeartRatePlaceholder"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="-20dp"
                         android:text="78.0"
                         android:textColor="@color/secondary_red"
                         android:textSize="15sp"
-                        card_view:layout_constraintBaseline_toBaselineOf="@+id/yesterdayStepsPlaceholder"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/maxHeartRatePlaceholder"
                         card_view:layout_constraintStart_toStartOf="@+id/textView6" />
 
                     <TextView
@@ -276,10 +276,10 @@
                         card_view:layout_constraintEnd_toEndOf="parent"
                         card_view:layout_constraintHorizontal_bias="0.0"
                         card_view:layout_constraintStart_toStartOf="parent"
-                        card_view:layout_constraintTop_toBottomOf="@+id/stepsMainPlaceholder" />
+                        card_view:layout_constraintTop_toBottomOf="@+id/heartRateMainPlaceholder" />
 
                     <TextView
-                        android:id="@+id/stepsMainPlaceholder"
+                        android:id="@+id/heartRateMainPlaceholder"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
@@ -292,7 +292,7 @@
                         card_view:layout_constraintTop_toBottomOf="@+id/heartRatePanelTile" />
 
                     <TextView
-                        android:id="@+id/yesterdayStepsPlaceholder"
+                        android:id="@+id/maxHeartRatePlaceholder"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
@@ -310,8 +310,8 @@
                         android:layout_marginTop="4dp"
                         android:text="Max"
                         android:textSize="12sp"
-                        card_view:layout_constraintStart_toStartOf="@+id/yesterdayStepsPlaceholder"
-                        card_view:layout_constraintTop_toBottomOf="@+id/yesterdayStepsPlaceholder" />
+                        card_view:layout_constraintStart_toStartOf="@+id/maxHeartRatePlaceholder"
+                        card_view:layout_constraintTop_toBottomOf="@+id/maxHeartRatePlaceholder" />
 
                     <TextView
                         android:id="@+id/textView3"
@@ -321,8 +321,8 @@
                         android:text="bpm"
                         android:textColor="@color/primary_red"
                         android:textSize="18sp"
-                        card_view:layout_constraintBaseline_toBaselineOf="@+id/stepsMainPlaceholder"
-                        card_view:layout_constraintStart_toEndOf="@+id/stepsMainPlaceholder" />
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/heartRateMainPlaceholder"
+                        card_view:layout_constraintStart_toEndOf="@+id/heartRateMainPlaceholder" />
 
                     <TextView
                         android:id="@+id/textView"
@@ -332,8 +332,8 @@
                         android:text="bpm"
                         android:textColor="@color/secondary_red"
                         android:textSize="12sp"
-                        card_view:layout_constraintBaseline_toBaselineOf="@+id/yesterdayStepsPlaceholder"
-                        card_view:layout_constraintStart_toEndOf="@+id/yesterdayStepsPlaceholder" />
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/maxHeartRatePlaceholder"
+                        card_view:layout_constraintStart_toEndOf="@+id/maxHeartRatePlaceholder" />
 
                     <TextView
                         android:id="@+id/textView4"
@@ -344,9 +344,9 @@
                         android:text="bpm"
                         android:textColor="@color/secondary_red"
                         android:textSize="12sp"
-                        card_view:layout_constraintBaseline_toBaselineOf="@+id/weekStepsPlaceholder"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/minHeartRatePlaceholder"
                         card_view:layout_constraintEnd_toEndOf="@+id/textView6"
-                        card_view:layout_constraintStart_toEndOf="@+id/weekStepsPlaceholder" />
+                        card_view:layout_constraintStart_toEndOf="@+id/minHeartRatePlaceholder" />
 
                     <TextView
                         android:id="@+id/textView7"
@@ -356,7 +356,7 @@
                         android:text="bpm"
                         android:textColor="@color/secondary_red"
                         android:textSize="12sp"
-                        card_view:layout_constraintBaseline_toBaselineOf="@+id/allStepsPlaceholder"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/avgHeartRatePlaceholder"
                         card_view:layout_constraintEnd_toEndOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
