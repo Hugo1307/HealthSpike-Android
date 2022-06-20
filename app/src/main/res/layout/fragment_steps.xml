@@ -214,9 +214,7 @@
                         card_view:layout_constraintBottom_toBottomOf="parent"
                         card_view:layout_constraintEnd_toEndOf="parent"
                         card_view:layout_constraintStart_toStartOf="parent"
-                        card_view:layout_constraintTop_toBottomOf="@+id/stepsChartCardTitle">
-
-                    </com.github.mikephil.charting.charts.BarChart>
+                        card_view:layout_constraintTop_toBottomOf="@+id/stepsChartCardTitle"/>
 
                     <TextView
                         android:id="@+id/stepsChartCardTitle"

@@ -2,11 +2,13 @@ package pt.ua.deti.icm.android.health_spike;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,22 +16,35 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityTransition;
 import com.google.android.gms.location.ActivityTransitionEvent;
 import com.google.android.gms.location.ActivityTransitionRequest;
 import com.google.android.gms.location.ActivityTransitionResult;
 import com.google.android.gms.location.DetectedActivity;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -53,6 +68,9 @@ import pt.ua.deti.icm.android.health_spike.fragments.StepsFragment;
 import pt.ua.deti.icm.android.health_spike.notifications.channels.HeartRateNotificationChannel;
 import pt.ua.deti.icm.android.health_spike.permissions.ActivityRecognitionPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.AppPermission;
+import pt.ua.deti.icm.android.health_spike.permissions.CoarseLocationPermission;
+import pt.ua.deti.icm.android.health_spike.permissions.FineLocationPermission;
+import pt.ua.deti.icm.android.health_spike.viewmodels.BodyActivityViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.StepsViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.WeatherForecastViewModel;
 import pt.ua.deti.icm.android.health_spike.weather_api.entities.WeatherForecastEntity;
@@ -69,9 +87,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "HealthSpike";
     private static final String CHANNEL_ID = "HealthSpike_NOTIFICATIONS";
 
-    private int notificationId = 0;
+    private FusedLocationProviderClient fusedLocationClient;
+    private LocationCallback locationCallback;
 
-    private WeatherForecastViewModel weatherForecastViewModel;
     private StepsViewModel stepsViewModel;
 
     private TransitionsReceiver mTransitionsReceiver;
@@ -103,14 +121,43 @@ public class MainActivity extends AppCompatActivity {
         // Disable the activity transitions updates as they're not needed when the app is closed
         if (activityTrackingEnabled)
             disableActivityTransitions();
+
+        fusedLocationClient.removeLocationUpdates(locationCallback);
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         // Enable the activity transitions updates when the application resumes
         if (!activityTrackingEnabled)
             enableActivityTransitions();
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(createLocationRequest());
+
+        SettingsClient client = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+        task.addOnFailureListener(e -> {
+            if (e instanceof ResolvableApiException) {
+                try {
+                    ResolvableApiException resolvable = (ResolvableApiException) e;
+                    resolvable.startResolutionForResult(MainActivity.this, 0x1);
+                } catch (IntentSender.SendIntentException sendEx) {
+                    // Ignore the error.
+                }
+            }
+
+        });
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        fusedLocationClient.requestLocationUpdates(createLocationRequest(), locationCallback, Looper.getMainLooper());
+
     }
 
     @Override
@@ -131,9 +178,31 @@ public class MainActivity extends AppCompatActivity {
         }
 
         AppPermission activityRecognitionPermission = new ActivityRecognitionPermission(this);
-        activityRecognitionPermission.askPermission();
+        AppPermission fineLocationPermission = new FineLocationPermission(this);
 
-        new HeartRateNotificationChannel().registerChannel(this);
+        activityRecognitionPermission.askPermission();
+        fineLocationPermission.askPermission();
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        createLocationRequest();
+
+        locationCallback = new LocationCallback() {
+
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+
+                if (locationResult == null) {
+                    return;
+                }
+
+                for (Location location : locationResult.getLocations()) {
+                    Log.i(TAG, "Location: " + location.toString());
+                }
+
+            }
+
+        };
 
         initSensors();
         initBottomNavBar();
@@ -147,60 +216,8 @@ public class MainActivity extends AppCompatActivity {
 
         stepsDao = AppDatabase.getInstance(getApplication()).dailyStepsDao();
 
-        weatherForecastViewModel = new ViewModelProvider(this).get(WeatherForecastViewModel.class);
         stepsViewModel = new ViewModelProvider(this).get(StepsViewModel.class);
 
-        IPMAWeatherClient ipmaWeatherClient = new IPMAWeatherClient();
-
-        new Thread(() -> {
-
-            ipmaWeatherClient.retrieveForecastForCity(1010500, new CityForecastListener() {
-
-                @Override
-                public void receiveForecastList(List<WeatherModel> forecast) {
-
-
-                    ipmaWeatherClient.retrieveWeatherConditionsDescriptions(new WeatherTypesListener() {
-
-                        @Override
-                        public void receiveWeatherTypesList(HashMap<Integer, WeatherTypeModel> weatherTypeModelHashMap) {
-
-                            ipmaWeatherClient.retrieveWindConditionsDescriptions(new WindTypesListener() {
-
-                                @Override
-                                public void receiveWeatherTypesList(HashMap<String, WindModel> windModelHashMap) {
-
-                                    weatherForecastViewModel.getForecastWeather().setValue(forecast.stream().map(weatherModel -> new WeatherForecastEntity("Aveiro", weatherModel.getForecastDate(), weatherModel.getPrecipitaProb(),
-                                            weatherModel.getTMin(), weatherModel.getTMax(), weatherModel.getPredWindDir(),
-                                            weatherTypeModelHashMap.get(weatherModel.getIdWeatherType()).getDescIdWeatherTypeEN(), windModelHashMap.get(String.valueOf(weatherModel.getClassWindSpeed())).getWindSpeedDescription(), weatherModel.getLastRefresh()))
-                                            .collect(Collectors.toList()));
-
-                                }
-
-                                @Override
-                                public void onFailure(Throwable cause) {
-                                    Log.w(TAG, "Failed to get wind types list.");
-                                }
-
-                            });
-
-                        }
-
-                        @Override
-                        public void onFailure(Throwable cause) {
-                            Log.w(TAG, "Failed to get weather types list.");
-                        }
-
-                    });
-                }
-
-                @Override
-                public void onFailure(Throwable cause) {
-                    Log.w(TAG, "Failed to get weather prediction.");
-                }
-            });
-
-        }).start();
 
     }
 
@@ -346,5 +363,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    protected LocationRequest createLocationRequest() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(2000);
+        locationRequest.setFastestInterval(1000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return locationRequest;
+    }
+
 
 }

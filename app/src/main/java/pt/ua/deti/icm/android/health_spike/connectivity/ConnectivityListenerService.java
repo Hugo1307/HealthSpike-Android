@@ -1,7 +1,5 @@
 package pt.ua.deti.icm.android.health_spike.connectivity;
 
-import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -13,14 +11,19 @@ import java.sql.Date;
 import java.time.Instant;
 
 import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
+import pt.ua.deti.icm.android.health_spike.data.entities.ActivityMeasurement;
 import pt.ua.deti.icm.android.health_spike.data.entities.HeartRateMeasurement;
+import pt.ua.deti.icm.android.health_spike.data.repositories.ActivityMeasurementRepository;
+import pt.ua.deti.icm.android.health_spike.notifications.channels.BodyActivityNotificationChannel;
 import pt.ua.deti.icm.android.health_spike.notifications.channels.HeartRateNotificationChannel;
+import pt.ua.deti.icm.android.health_spike.utils.BodyActivityStatus;
 
 public class ConnectivityListenerService extends WearableListenerService {
 
     private AppDatabase appDatabase;
 
-    private long lastWarningTimestamp = 0;
+    private long lastHRNotificationTimestamp = 0;
+    private long lastBodyActivityNotificationTimestamp = 0;
 
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
@@ -32,8 +35,6 @@ public class ConnectivityListenerService extends WearableListenerService {
         byte[] messageBytePayload = messageEvent.getData();
         String messagePayload = new String(messageBytePayload, StandardCharsets.UTF_8);
 
-        Log.i("HealthSpike", "PAYLOAD: " + messagePayload);
-
         if (topic.equals(ConnectivityTopics.HEART_RATE_TOPIC.getTopic())) {
 
             double heartRate = Double.parseDouble(messagePayload);
@@ -41,13 +42,13 @@ public class ConnectivityListenerService extends WearableListenerService {
             if (heartRate == 0) return;
 
             // Only send notification every 30 seconds
-            if (heartRate >= 100 && (System.currentTimeMillis() - lastWarningTimestamp) > 30*1000) {
+            if (heartRate >= 100 && (System.currentTimeMillis() - lastHRNotificationTimestamp) > 30*1000) {
 
                 HeartRateNotificationChannel heartRateNotificationChannel = new HeartRateNotificationChannel();
                 heartRateNotificationChannel.registerChannel(this);
                 heartRateNotificationChannel.sendNotification(this, "Heart Rate Monitor", "Be Careful! Your heart rate is very high.", true);
 
-                lastWarningTimestamp = System.currentTimeMillis();
+                lastHRNotificationTimestamp = System.currentTimeMillis();
 
             }
 
@@ -55,7 +56,25 @@ public class ConnectivityListenerService extends WearableListenerService {
 
         } else if (topic.equals(ConnectivityTopics.ACTIVITY_STATUS_TOPIC.getTopic())) {
 
-            Log.i("HealthSpike", "Received in topic ActivityStatusTopic: " + new String(messageBytePayload));
+            Integer activityStatusId = BodyActivityStatus.getIdByName(messagePayload);
+
+            if (activityStatusId == null) return;
+
+            ActivityMeasurementRepository activityMeasurementRepository = ActivityMeasurementRepository.getInstance(getApplicationContext());
+
+            activityMeasurementRepository.insert(new ActivityMeasurement(Date.from(Instant.now()), activityStatusId));
+
+            Double currentActivityIndex = activityMeasurementRepository.getCurrentActivityIndex();
+
+            if (currentActivityIndex != null && currentActivityIndex <= 1.25 && (System.currentTimeMillis() - lastBodyActivityNotificationTimestamp) > 60*60*1000) {
+
+                BodyActivityNotificationChannel bodyActivityNotificationChannel = new BodyActivityNotificationChannel();
+                bodyActivityNotificationChannel.registerChannel(this);
+                bodyActivityNotificationChannel.sendNotification(this, "Activity Monitor", "You are still for too long. Maybe it's time to go for a walk?", true);
+
+                lastBodyActivityNotificationTimestamp = System.currentTimeMillis();
+
+            }
 
         }
 

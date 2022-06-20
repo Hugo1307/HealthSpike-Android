@@ -1,5 +1,7 @@
 package pt.ua.deti.icm.android.health_spike.notifications.channels;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 
 public abstract class AppNotificationChannel {
@@ -16,7 +18,15 @@ public abstract class AppNotificationChannel {
         this.importance = importance;
     }
 
-    public abstract void registerChannel(Context context);
+    public void registerChannel(Context context) {
+
+        NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
+        channel.setDescription(channelDescription);
+
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+
+    }
 
     public abstract void sendNotification(Context context, String title, String body, boolean update);
 

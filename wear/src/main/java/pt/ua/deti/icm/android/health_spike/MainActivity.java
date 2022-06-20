@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
                 }).start();
 
             }
-        }, 5000, 5000);
+        }, 5000, 10000);
 
     }
 

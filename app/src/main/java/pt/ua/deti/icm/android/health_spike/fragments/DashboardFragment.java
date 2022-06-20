@@ -1,5 +1,6 @@
 package pt.ua.deti.icm.android.health_spike.fragments;
 
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +17,27 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.BarLineChartBase;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import pt.ua.deti.icm.android.health_spike.R;
+import pt.ua.deti.icm.android.health_spike.data.repositories.ActivityMeasurementRepository;
 import pt.ua.deti.icm.android.health_spike.viewmodels.DashboardViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.HeartRateViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.StepsViewModel;
@@ -30,6 +48,8 @@ public class DashboardFragment extends Fragment {
 
     private HeartRateViewModel heartRateViewModel;
     private StepsViewModel stepsViewModel;
+
+    private final List<BarEntry> chartData = new ArrayList<>();
 
     public static DashboardFragment newInstance() {
         return new DashboardFragment();
@@ -54,6 +74,8 @@ public class DashboardFragment extends Fragment {
 
         registerHRObservers(view);
         registerPedometerObservers(view);
+
+        initStepsChart(view);
 
     }
 
@@ -135,6 +157,82 @@ public class DashboardFragment extends Fragment {
         heartRateViewModel.getAverageHeartRate().observe(getViewLifecycleOwner(), avgHeartRate ->
                 ((TextView) view.findViewById(R.id.avgHeartRatePlaceholder)).setText(avgHeartRate != null ? new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ENGLISH)).format(avgHeartRate) : "0.0")
         );
+
+    }
+
+    private void registerActivityObservers(View view) {
+
+
+
+    }
+
+    private void setupStepsChart(View view) {
+
+        BarChart barChart = view.findViewById(R.id.activityBarChart);
+        BarDataSet barDataSet = new BarDataSet(chartData, "Hourly Activity");
+        BarData barData = new BarData(barDataSet);
+
+        barChart.setClickable(false);
+        barChart.setDoubleTapToZoomEnabled(false);
+        barChart.setPinchZoom(false);
+        barChart.setScaleEnabled(false);
+
+        barChart.getXAxis().setDrawGridLines(false);
+        barChart.getAxisLeft().setDrawGridLines(false);
+        barChart.getAxisRight().setDrawGridLines(false);
+
+        barChart.getXAxis().setDrawAxisLine(true);
+        barChart.getAxisLeft().setDrawAxisLine(false);
+        barChart.getAxisRight().setDrawAxisLine(false);
+
+        barChart.getXAxis().setDrawLabels(true);
+        barChart.getAxisLeft().setDrawLabels(false);
+        barChart.getAxisRight().setDrawLabels(false);
+
+        barChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        barChart.getXAxis().setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return LocalDateTime.now().minusHours((int) value-1).format(DateTimeFormatter.ofPattern("HH:00"));
+            }
+        });
+
+        barChart.setData(barData);
+        barChart.setDrawGridBackground(false);
+
+        barChart.getDescription().setEnabled(false);
+        barChart.getLegend().setEnabled(false);
+
+        barDataSet.setColor(ContextCompat.getColor(view.getContext(), R.color.primary_green));
+        barDataSet.setDrawValues(false);
+
+        barChart.notifyDataSetChanged();
+        barChart.invalidate();
+
+    }
+
+    private void initStepsChart(View view) {
+
+        int maxHourOffset = 6;
+
+        for (int hourOffset = 1; hourOffset <= maxHourOffset; hourOffset++) {
+
+            int finalHourOffset = hourOffset;
+            ActivityMeasurementRepository.getInstance(view.getContext()).getHourlyAverage(finalHourOffset).observe(getViewLifecycleOwner(), value -> {
+
+                if (value != null) {
+                    chartData.add(new BarEntry((float) finalHourOffset, value.floatValue()));
+                } else {
+                    chartData.add(new BarEntry((float) finalHourOffset, 0f));
+                }
+
+                if (chartData.size() == maxHourOffset) {
+                    setupStepsChart(view);
+                }
+
+            });
+
+        }
 
     }
 

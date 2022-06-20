@@ -12,12 +12,12 @@ import java.util.List;
 
 import pt.ua.deti.icm.android.health_spike.R;
 
-public class HeartRateNotificationChannel extends AppNotificationChannel {
+public class BodyActivityNotificationChannel extends AppNotificationChannel {
 
     public static final List<Integer> notificationsIds = new ArrayList<>();
 
-    public HeartRateNotificationChannel() {
-        super("HealthSpike_HR_Channel", "Heart Rate Alerts", "Alerts for heart rate measurements", NotificationManager.IMPORTANCE_HIGH);
+    public BodyActivityNotificationChannel() {
+        super("HealthSpike_BodyActivity_Channel", "Activity Alerts", "Alerts for user's body activity", NotificationManager.IMPORTANCE_LOW);
     }
 
     @Override
