@@ -1,5 +1,8 @@
 package pt.ua.deti.icm.android.health_spike.connectivity;
 
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.wearable.MessageEvent;
@@ -29,6 +32,8 @@ public class ConnectivityListenerService extends WearableListenerService {
         byte[] messageBytePayload = messageEvent.getData();
         String messagePayload = new String(messageBytePayload, StandardCharsets.UTF_8);
 
+        Log.i("HealthSpike", "PAYLOAD: " + messagePayload);
+
         if (topic.equals(ConnectivityTopics.HEART_RATE_TOPIC.getTopic())) {
 
             double heartRate = Double.parseDouble(messagePayload);
@@ -47,6 +52,10 @@ public class ConnectivityListenerService extends WearableListenerService {
             }
 
             appDatabase.heartRateMeasurementDao().insertMeasurement(new HeartRateMeasurement(Date.from(Instant.now()), heartRate));
+
+        } else if (topic.equals(ConnectivityTopics.ACTIVITY_STATUS_TOPIC.getTopic())) {
+
+            Log.i("HealthSpike", "Received in topic ActivityStatusTopic: " + new String(messageBytePayload));
 
         }
 

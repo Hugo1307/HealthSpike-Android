@@ -7,52 +7,46 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
-import androidx.wear.ambient.AmbientModeSupport;
+import androidx.work.Data;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import pt.ua.deti.icm.android.health_spike.body_activity.BodyActivityHandler;
+import pt.ua.deti.icm.android.health_spike.body_activity.BodyActivityStatus;
+import pt.ua.deti.icm.android.health_spike.body_activity.SyncBodyActivityWorker;
+import pt.ua.deti.icm.android.health_spike.connectivity.ConnectivityHelper;
+import pt.ua.deti.icm.android.health_spike.connectivity.ConnectivityTopics;
 import pt.ua.deti.icm.android.health_spike.databinding.ActivityMainBinding;
-import pt.ua.deti.icm.android.health_spike.permissions.ActivityRecognitionPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.AppPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.BodySensorsPermission;
-import pt.ua.deti.icm.android.health_spike.viewmodels.HeartRateViewModel;
 
 public class MainActivity extends Activity {
-
-    private ActivityMainBinding binding;
-    public static final String HR_MESSAGING_PATH = "/heart_rate";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        pt.ua.deti.icm.android.health_spike.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         AppPermission bodySensorsPermission = new BodySensorsPermission(this);
@@ -60,10 +54,26 @@ public class MainActivity extends Activity {
 
         initSensors();
 
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                String value = BodyActivityHandler.getInstance().getActivityStatus() != null ? BodyActivityHandler.getInstance().getActivityStatus().toString() : BodyActivityStatus.LOW_ACTIVITY.toString();
+
+                new Thread(() -> {
+                    ConnectivityHelper connectivityHelper = new ConnectivityHelper(getApplicationContext());
+                    connectivityHelper.getNodes()
+                            .stream()
+                            .findFirst()
+                            .ifPresent(nodeId -> connectivityHelper.sendMessage(ConnectivityTopics.ACTIVITY_STATUS_TOPIC.getTopic(), nodeId, value));
+                }).start();
+
+                Log.i("HealthSpike", "SENDING ACTIVITY STATUS CHANGED.");
+            }
+        }, 0, 1000);//put here time 1000 milliseconds=1 second
+
     }
 
-
-    private final SensorEventListener sensorEventListener = new SensorEventListener() {
+    private final SensorEventListener heartRateSensorEventListener = new SensorEventListener() {
 
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
@@ -73,14 +83,49 @@ public class MainActivity extends Activity {
             TextView heartRatePlaceholder = findViewById(R.id.heartRatePlaceholder);
             heartRatePlaceholder.setText(sensorEvent.values[0] + " bpm");
 
-            new Thread(() -> getNodes().stream().findFirst().ifPresent(nodeId -> sendMessage(nodeId, String.valueOf(sensorEvent.values[0])))).start();
-
-            Log.i("HealthSpike", "Heart rate value Changed");
+            new Thread(() -> {
+                ConnectivityHelper connectivityHelper = new ConnectivityHelper(getApplicationContext());
+                connectivityHelper.getNodes()
+                        .stream()
+                        .findFirst()
+                        .ifPresent(nodeId -> connectivityHelper.sendMessage(ConnectivityTopics.HEART_RATE_TOPIC.getTopic(), nodeId, String.valueOf(sensorEvent.values[0])));
+            }).start();
 
         }
 
         @Override
-        public void onAccuracyChanged(Sensor sensor, int i) { }
+        public void onAccuracyChanged(Sensor sensor, int i) {
+        }
+
+    };
+
+    private final SensorEventListener accelerometerSensorEventListener = new SensorEventListener() {
+
+        private float[] oldValues = null;
+
+        @Override
+        public void onSensorChanged(SensorEvent sensorEvent) {
+
+            if (sensorEvent.values == null || sensorEvent.values.length != 3)
+                return;
+
+            float[] newValues = new float[3];
+
+            if (oldValues == null) {
+                oldValues = new float[]{sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]};
+            }
+
+            newValues[0] = sensorEvent.values[0];
+            newValues[1] = sensorEvent.values[1];
+            newValues[2] = sensorEvent.values[2];
+
+            BodyActivityHandler.getInstance().calculateActivityStatus(oldValues, newValues);
+
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int i) {
+        }
 
     };
 
@@ -88,42 +133,13 @@ public class MainActivity extends Activity {
 
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         Sensor stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
+        Sensor accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
         if (stepSensor != null)
-            sensorManager.registerListener(sensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(heartRateSensorEventListener, stepSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
-    }
-
-    private void sendMessage(String nodeId, String message) {
-
-        if (nodeId == null) {
-            Log.i("HealthSpike", "Error forwarding message - node id was null.");
-            return;
-        }
-
-        Task<Integer> sendTask = Wearable.getMessageClient(this).sendMessage(nodeId, HR_MESSAGING_PATH, message.getBytes(StandardCharsets.UTF_8));
-
-        sendTask.addOnSuccessListener(integer -> Log.i("HealthSpike", "Successfully sent message."));
-        sendTask.addOnFailureListener(e -> Log.i("HealthSpike", "Error sending message."));
-
-    }
-
-    private Set<String> getNodes() {
-
-        List<Node> nodes;
-
-        Log.i("HealthSpike", "Getting all nodes");
-
-        try {
-            nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
-            Log.i("HealthSpike", "Error");
-            return new HashSet<>();
-        }
-
-        Log.i("HealthSpike", "Nodes amount: " + nodes.size());
-
-        return nodes.stream().map(Node::getId).collect(Collectors.toSet());
+        if (accelerometerSensor != null)
+            sensorManager.registerListener(accelerometerSensorEventListener, accelerometerSensor, 5 * 1000000);
 
     }
 
