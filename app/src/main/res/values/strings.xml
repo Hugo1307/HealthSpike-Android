@@ -9,4 +9,6 @@
     <string name="main_panel_steps_label">Steps</string>
     <string name="main_panel_distance_label">Distance</string>
     <string name="initial_measurement">0</string>
+    <string name="pedometer_status_stopped">Stopped</string>
+    <string name="pedometer_status_walking">Walking</string>
 </resources>
