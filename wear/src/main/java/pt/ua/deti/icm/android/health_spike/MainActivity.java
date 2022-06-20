@@ -7,33 +7,13 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.widget.TextView;
 
-import androidx.work.Data;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
-
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.Wearable;
-
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import pt.ua.deti.icm.android.health_spike.body_activity.BodyActivityHandler;
 import pt.ua.deti.icm.android.health_spike.body_activity.BodyActivityStatus;
-import pt.ua.deti.icm.android.health_spike.body_activity.SyncBodyActivityWorker;
 import pt.ua.deti.icm.android.health_spike.connectivity.ConnectivityHelper;
 import pt.ua.deti.icm.android.health_spike.connectivity.ConnectivityTopics;
 import pt.ua.deti.icm.android.health_spike.databinding.ActivityMainBinding;
@@ -67,9 +47,8 @@ public class MainActivity extends Activity {
                             .ifPresent(nodeId -> connectivityHelper.sendMessage(ConnectivityTopics.ACTIVITY_STATUS_TOPIC.getTopic(), nodeId, value));
                 }).start();
 
-                Log.i("HealthSpike", "SENDING ACTIVITY STATUS CHANGED.");
             }
-        }, 0, 1000);//put here time 1000 milliseconds=1 second
+        }, 5000, 5000);
 
     }
 
@@ -120,6 +99,8 @@ public class MainActivity extends Activity {
             newValues[2] = sensorEvent.values[2];
 
             BodyActivityHandler.getInstance().calculateActivityStatus(oldValues, newValues);
+
+            oldValues = newValues.clone();
 
         }
 

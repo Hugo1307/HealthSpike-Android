@@ -14,9 +14,9 @@ public class BodyActivityHandler {
         double yChange = Math.abs(oldValues[1] - newValues[1]);
         double zChange = Math.abs(oldValues[2] - newValues[2]);
 
-        if (xChange > 2 && yChange > 2 && zChange > 2 || xChange > 4 || yChange > 4 || zChange > 4) {
+        if (xChange > 5 && yChange > 5 && zChange > 5 || xChange > 6 || yChange > 6 || zChange > 6) {
             activityStatus = BodyActivityStatus.HIGH_ACTIVITY;
-        } else if (xChange > 1 && yChange > 1 && zChange > 1  || xChange > 2 || yChange > 2 || zChange > 2) {
+        } else if (xChange > 2 && yChange > 2 && zChange > 2  || xChange > 3 || yChange > 3 || zChange > 3) {
             activityStatus = BodyActivityStatus.MEDIUM_ACTIVITY;
         } else {
             activityStatus = BodyActivityStatus.LOW_ACTIVITY;
