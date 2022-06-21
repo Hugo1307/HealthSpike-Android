@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -37,6 +38,7 @@ import java.util.Locale;
 import pt.ua.deti.icm.android.health_spike.R;
 import pt.ua.deti.icm.android.health_spike.SettingsActivity;
 import pt.ua.deti.icm.android.health_spike.data.repositories.ActivityMeasurementRepository;
+import pt.ua.deti.icm.android.health_spike.utils.BodyActivityStatus;
 import pt.ua.deti.icm.android.health_spike.viewmodels.HeartRateViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.LocationViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.SettingsViewModel;
@@ -86,6 +88,7 @@ public class DashboardFragment extends Fragment {
         registerHRObservers(view);
         registerPedometerObservers(view);
         registerLocationObservers(view);
+        registerActivityObservers(view);
 
         initActivityChart(view);
 
@@ -184,6 +187,37 @@ public class DashboardFragment extends Fragment {
         locationViewModel.getTodayDistance().observe(getViewLifecycleOwner(), todayDistance ->
             ((TextView) view.findViewById(R.id.mainPanelDistancePlaceholder)).setText(todayDistance != null ? new DecimalFormat("#.###", new DecimalFormatSymbols(Locale.ENGLISH)).format(todayDistance/1000) : "0")
         );
+
+    }
+
+    private void registerActivityObservers(View view) {
+
+        TextView activityCurrentStatus = view.findViewById(R.id.currentActivityPlaceholder);
+
+        ActivityMeasurementRepository.getInstance(view.getContext()).getCurrentActivityStatus().observe(getViewLifecycleOwner(), integer -> {
+
+            if (integer == null) return;
+
+            switch (integer) {
+                case 0:
+                    activityCurrentStatus.setText("Still");
+                    activityCurrentStatus.setTextColor(getResources().getColor(R.color.primary_red));
+                    break;
+                case 1:
+                    activityCurrentStatus.setText("Medium");
+                    activityCurrentStatus.setTextColor(getResources().getColor(R.color.primary_blue));
+                    break;
+                case 2:
+                    activityCurrentStatus.setText("Highly Active");
+                    activityCurrentStatus.setTextColor(getResources().getColor(R.color.primary_green));
+                    break;
+                default:
+                    activityCurrentStatus.setText("Unknown");
+                    activityCurrentStatus.setTextColor(getResources().getColor(R.color.black));
+                    break;
+            }
+
+        });
 
     }
 

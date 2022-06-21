@@ -25,7 +25,7 @@
                 android:id="@+id/activity_chart_card_view"
                 style="@style/MyCardView"
                 android:layout_width="0dp"
-                android:layout_height="175dp"
+                android:layout_height="180dp"
                 android:layout_gravity="center"
                 android:layout_marginStart="35dp"
                 android:layout_marginTop="25dp"
@@ -38,18 +38,18 @@
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="154dp">
 
                     <com.github.mikephil.charting.charts.BarChart
                         android:id="@+id/activityBarChart"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="5dp"
                         android:layout_marginBottom="10dp"
                         card_view:layout_constraintBottom_toBottomOf="parent"
                         card_view:layout_constraintEnd_toEndOf="parent"
                         card_view:layout_constraintStart_toStartOf="parent"
-                        card_view:layout_constraintTop_toBottomOf="@+id/activityChartCardTitle" />
+                        card_view:layout_constraintTop_toBottomOf="@+id/textView8" />
 
                     <TextView
                         android:id="@+id/activityChartCardTitle"
@@ -63,6 +63,31 @@
                         android:typeface="normal"
                         card_view:layout_constraintStart_toStartOf="parent"
                         card_view:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textView8"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginTop="2dp"
+                        android:text="Currently:"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textSize="12sp"
+                        card_view:layout_constraintStart_toStartOf="parent"
+                        card_view:layout_constraintTop_toBottomOf="@+id/activityChartCardTitle" />
+
+                    <TextView
+                        android:id="@+id/currentActivityPlaceholder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="Unknown"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textColor="#969696"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        card_view:layout_constraintBaseline_toBaselineOf="@+id/textView8"
+                        card_view:layout_constraintStart_toEndOf="@+id/textView8" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -27,17 +27,16 @@ public class ConnectivityHelper {
 
         List<Node> nodes;
 
-        Log.i("HealthSpike", "Getting all nodes");
+        Log.d("HealthSpike", "Getting all nodes");
 
         try {
             nodes = Tasks.await(Wearable.getNodeClient(context).getConnectedNodes());
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
-            Log.i("HealthSpike", "Error");
             return new HashSet<>();
         }
 
-        Log.i("HealthSpike", "Nodes amount: " + nodes.size());
+        Log.d("HealthSpike", "Nodes amount: " + nodes.size());
 
         return nodes.stream().map(Node::getId).collect(Collectors.toSet());
 
@@ -46,14 +45,14 @@ public class ConnectivityHelper {
     public void sendMessage(String messagePath, String nodeId, String message) {
 
         if (nodeId == null) {
-            Log.i("HealthSpike", "Error forwarding message - node id was null.");
+            Log.d("HealthSpike", "Error forwarding message - node id was null.");
             return;
         }
 
         Task<Integer> sendTask = Wearable.getMessageClient(context).sendMessage(nodeId, messagePath, message.getBytes(StandardCharsets.UTF_8));
 
-        sendTask.addOnSuccessListener(integer -> Log.i("HealthSpike", "Successfully sent message."));
-        sendTask.addOnFailureListener(e -> Log.i("HealthSpike", "Error sending message."));
+        sendTask.addOnSuccessListener(integer -> Log.d("HealthSpike", "Successfully sent message."));
+        sendTask.addOnFailureListener(e -> Log.e("HealthSpike", "Error sending message."));
 
     }
 

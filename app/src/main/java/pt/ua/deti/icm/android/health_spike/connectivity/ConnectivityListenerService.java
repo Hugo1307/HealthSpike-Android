@@ -80,7 +80,7 @@ public class ConnectivityListenerService extends WearableListenerService {
 
                 BodyActivityNotificationChannel bodyActivityNotificationChannel = new BodyActivityNotificationChannel();
                 bodyActivityNotificationChannel.registerChannel(this);
-                bodyActivityNotificationChannel.sendNotification(this, "Activity Monitor", "You are still for too long. Maybe it's time to go for a walk?", true);
+                bodyActivityNotificationChannel.sendNotification(this, "Activity Monitor", "You are still for too long. Maybe it's time to go for a walk?", false);
 
                 lastBodyActivityNotificationTimestamp = System.currentTimeMillis();
 

@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -25,6 +27,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -43,6 +46,9 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.time.Instant;
@@ -50,8 +56,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
+import pt.ua.deti.icm.android.health_spike.connectivity.ConnectivityTopics;
 import pt.ua.deti.icm.android.health_spike.data.dao.StepsDao;
 import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
 import pt.ua.deti.icm.android.health_spike.data.entities.StepRegister;
@@ -81,18 +91,17 @@ import pt.ua.deti.icm.android.health_spike.weather_api.network.listeners.WindTyp
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "HealthSpike";
-    private static final String CHANNEL_ID = "HealthSpike_NOTIFICATIONS";
 
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
 
     private StepsViewModel stepsViewModel;
-    private LocationViewModel locationViewModel;
 
     private TransitionsReceiver mTransitionsReceiver;
     private List<ActivityTransition> activityTransitionList;
     private PendingIntent mActivityTransitionsPendingIntent;
     private boolean activityTrackingEnabled;
+    private boolean deviceConnected = false;
 
     private StepsDao stepsDao;
 
@@ -188,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
         initBottomNavBar();
         registerTransitions();
         registerSettingsBtnListener();
+        listenForNodesConnection();
 
         // Initialize PendingIntent that will be triggered when a activity transition occurs.
         Intent intent = new Intent(TRANSITIONS_RECEIVER_ACTION);
@@ -198,23 +208,8 @@ public class MainActivity extends AppCompatActivity {
         stepsDao = AppDatabase.getInstance(getApplication()).dailyStepsDao();
 
         stepsViewModel = new ViewModelProvider(this).get(StepsViewModel.class);
-        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
-        locationCallback = new LocationCallback() {
-
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-
-                LocationMeasurementRepository locationMeasurementRepository = LocationMeasurementRepository.getInstance(getApplicationContext());
-
-                for (Location location : locationResult.getLocations()) {
-                    CompletableFuture.runAsync(() -> locationMeasurementRepository.insertLocation(location));
-                    Log.i("HealthSpike", "Location added to database: " + location);
-                }
-
-            }
-
-        };
+        setupLocationCallback();
 
     }
 
@@ -369,11 +364,74 @@ public class MainActivity extends AppCompatActivity {
         return locationRequest;
     }
 
+    private void setupLocationCallback() {
+        locationCallback = new LocationCallback() {
+
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+
+            LocationMeasurementRepository locationMeasurementRepository = LocationMeasurementRepository.getInstance(getApplicationContext());
+
+            for (Location location : locationResult.getLocations()) {
+                CompletableFuture.runAsync(() -> locationMeasurementRepository.insertLocation(location));
+            }
+
+            }
+
+        };
+    }
+
     private void registerSettingsBtnListener() {
         findViewById(R.id.settingsBtnImageView).setOnClickListener(view -> {
             Intent settingsActivityIntent = new Intent(this, SettingsActivity.class);
             startActivity(settingsActivityIntent);
         });
+    }
+
+    private void listenForNodesConnection() {
+
+        final Activity activity = this;
+
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+
+            @Override
+            public void run() {
+
+                new Thread(() -> {
+
+                    ImageView watchConnected = findViewById(R.id.watchConnectedImageView);
+                    List<Node> nodes;
+
+                    try {
+                        nodes = Tasks.await(Wearable.getNodeClient(getApplicationContext()).getConnectedNodes());
+                    } catch (ExecutionException | InterruptedException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+
+                    if (nodes.size() > 0) {
+                        if (!deviceConnected) {
+                            activity.runOnUiThread(() -> {
+                                watchConnected.setColorFilter(getResources().getColor(R.color.primary_green));
+                                Toast.makeText(getApplicationContext(), "Wearable device connected!", Toast.LENGTH_SHORT).show();
+                            });
+                            deviceConnected = true;
+                        }
+                    } else {
+                        if (deviceConnected) {
+                            activity.runOnUiThread(() -> {
+                                watchConnected.setColorFilter(Color.parseColor("#969696"));
+                                Toast.makeText(getApplicationContext(), "Wearable device disconnected.", Toast.LENGTH_SHORT).show();
+                            });
+                            deviceConnected = false;
+                        }
+                    }
+
+                }).start();
+
+            }
+        }, 0, 5000);
+
     }
 
 }
