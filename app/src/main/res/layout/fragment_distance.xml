@@ -24,7 +24,7 @@
             android:layout_height="166dp">
 
             <TextView
-                android:id="@+id/allStepsPlaceholder"
+                android:id="@+id/locationLongitudePlaceholder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -32,7 +32,7 @@
                 android:textColor="@color/primary_blue"
                 android:textSize="10sp"
                 card_view:layout_constraintEnd_toEndOf="parent"
-                card_view:layout_constraintTop_toBottomOf="@+id/textView10" />
+                card_view:layout_constraintTop_toBottomOf="@+id/locationLatitudePlaceholder" />
 
             <TextView
                 android:id="@+id/textView9"
@@ -45,14 +45,14 @@
                 card_view:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
-                android:id="@+id/weekStepsPlaceholder"
+                android:id="@+id/weekDistancePlaceholder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="-20dp"
                 android:text="1.42"
                 android:textColor="@color/primary_blue"
                 android:textSize="15sp"
-                card_view:layout_constraintBaseline_toBaselineOf="@+id/yesterdayStepsPlaceholder"
+                card_view:layout_constraintBaseline_toBaselineOf="@+id/yesterdayDistancePlaceholder"
                 card_view:layout_constraintStart_toStartOf="@+id/textView6" />
 
             <TextView
@@ -87,10 +87,10 @@
                 card_view:layout_constraintEnd_toEndOf="parent"
                 card_view:layout_constraintHorizontal_bias="0.0"
                 card_view:layout_constraintStart_toStartOf="parent"
-                card_view:layout_constraintTop_toBottomOf="@+id/stepsMainPlaceholder" />
+                card_view:layout_constraintTop_toBottomOf="@+id/todayDistanceMainPlaceholder" />
 
             <TextView
-                android:id="@+id/stepsMainPlaceholder"
+                android:id="@+id/todayDistanceMainPlaceholder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
@@ -103,7 +103,7 @@
                 card_view:layout_constraintTop_toBottomOf="@+id/heartRatePanelTile" />
 
             <TextView
-                android:id="@+id/yesterdayStepsPlaceholder"
+                android:id="@+id/yesterdayDistancePlaceholder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -119,10 +119,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Total"
+                android:text="Yesterday"
                 android:textSize="12sp"
-                card_view:layout_constraintStart_toStartOf="@+id/yesterdayStepsPlaceholder"
-                card_view:layout_constraintTop_toBottomOf="@+id/yesterdayStepsPlaceholder" />
+                card_view:layout_constraintStart_toStartOf="@+id/yesterdayDistancePlaceholder"
+                card_view:layout_constraintTop_toBottomOf="@+id/yesterdayDistancePlaceholder" />
 
             <TextView
                 android:id="@+id/textView3"
@@ -132,8 +132,8 @@
                 android:text="Km"
                 android:textColor="@color/primary_blue"
                 android:textSize="18sp"
-                card_view:layout_constraintBaseline_toBaselineOf="@+id/stepsMainPlaceholder"
-                card_view:layout_constraintStart_toEndOf="@+id/stepsMainPlaceholder" />
+                card_view:layout_constraintBaseline_toBaselineOf="@+id/todayDistanceMainPlaceholder"
+                card_view:layout_constraintStart_toEndOf="@+id/todayDistanceMainPlaceholder" />
 
             <TextView
                 android:id="@+id/textView"
@@ -143,8 +143,8 @@
                 android:text="Km"
                 android:textColor="@color/primary_blue"
                 android:textSize="12sp"
-                card_view:layout_constraintBaseline_toBaselineOf="@+id/yesterdayStepsPlaceholder"
-                card_view:layout_constraintStart_toEndOf="@+id/yesterdayStepsPlaceholder" />
+                card_view:layout_constraintBaseline_toBaselineOf="@+id/yesterdayDistancePlaceholder"
+                card_view:layout_constraintStart_toEndOf="@+id/yesterdayDistancePlaceholder" />
 
             <TextView
                 android:id="@+id/textView4"
@@ -155,12 +155,12 @@
                 android:text="Km"
                 android:textColor="@color/primary_blue"
                 android:textSize="12sp"
-                card_view:layout_constraintBaseline_toBaselineOf="@+id/weekStepsPlaceholder"
+                card_view:layout_constraintBaseline_toBaselineOf="@+id/weekDistancePlaceholder"
                 card_view:layout_constraintEnd_toEndOf="@+id/textView6"
-                card_view:layout_constraintStart_toEndOf="@+id/weekStepsPlaceholder" />
+                card_view:layout_constraintStart_toEndOf="@+id/weekDistancePlaceholder" />
 
             <TextView
-                android:id="@+id/textView10"
+                android:id="@+id/locationLatitudePlaceholder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="13dp"

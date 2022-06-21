@@ -1,16 +1,13 @@
 package pt.ua.deti.icm.android.health_spike;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,7 +20,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -51,16 +47,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import pt.ua.deti.icm.android.health_spike.data.dao.StepsDao;
 import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
 import pt.ua.deti.icm.android.health_spike.data.entities.StepRegister;
+import pt.ua.deti.icm.android.health_spike.data.repositories.LocationMeasurementRepository;
 import pt.ua.deti.icm.android.health_spike.fragments.DashboardFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.DistanceFragment;
 import pt.ua.deti.icm.android.health_spike.fragments.HeartRateFragment;
@@ -71,6 +65,7 @@ import pt.ua.deti.icm.android.health_spike.permissions.AppPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.CoarseLocationPermission;
 import pt.ua.deti.icm.android.health_spike.permissions.FineLocationPermission;
 import pt.ua.deti.icm.android.health_spike.viewmodels.BodyActivityViewModel;
+import pt.ua.deti.icm.android.health_spike.viewmodels.LocationViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.StepsViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.WeatherForecastViewModel;
 import pt.ua.deti.icm.android.health_spike.weather_api.entities.WeatherForecastEntity;
@@ -91,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     private LocationCallback locationCallback;
 
     private StepsViewModel stepsViewModel;
+    private LocationViewModel locationViewModel;
 
     private TransitionsReceiver mTransitionsReceiver;
     private List<ActivityTransition> activityTransitionList;
@@ -187,23 +183,6 @@ public class MainActivity extends AppCompatActivity {
 
         createLocationRequest();
 
-        locationCallback = new LocationCallback() {
-
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-
-                if (locationResult == null) {
-                    return;
-                }
-
-                for (Location location : locationResult.getLocations()) {
-                    Log.i(TAG, "Location: " + location.toString());
-                }
-
-            }
-
-        };
-
         initSensors();
         initBottomNavBar();
         registerTransitions();
@@ -217,7 +196,23 @@ public class MainActivity extends AppCompatActivity {
         stepsDao = AppDatabase.getInstance(getApplication()).dailyStepsDao();
 
         stepsViewModel = new ViewModelProvider(this).get(StepsViewModel.class);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
+        locationCallback = new LocationCallback() {
+
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+
+                LocationMeasurementRepository locationMeasurementRepository = LocationMeasurementRepository.getInstance(getApplicationContext());
+
+                for (Location location : locationResult.getLocations()) {
+                    CompletableFuture.runAsync(() -> locationMeasurementRepository.insertLocation(location));
+                    Log.i("HealthSpike", "Location added to database: " + location);
+                }
+
+            }
+
+        };
 
     }
 
@@ -366,8 +361,8 @@ public class MainActivity extends AppCompatActivity {
 
     protected LocationRequest createLocationRequest() {
         LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(2000);
-        locationRequest.setFastestInterval(1000);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         return locationRequest;
     }

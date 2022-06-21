@@ -34,6 +34,9 @@ public interface HeartRateMeasurementDao {
     @Query("SELECT avg(heart_rate_value) FROM heart_rate_measurements")
     LiveData<Double> getAverageMeasurement();
 
+    @Query("SELECT avg(heart_rate_value) FROM heart_rate_measurements WHERE timestamp BETWEEN strftime('%s', 'now', 'start of day', '-' || :dayOffset || ' day') AND strftime('%s', 'now', '-' || :dayBeforeOffset || ' day');")
+    LiveData<Double> getLiveDailyAverage(int dayOffset, int dayBeforeOffset);
+
     @Insert
     void insertMeasurement(HeartRateMeasurement heartRateMeasurement);
 
