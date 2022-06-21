@@ -17,13 +17,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/large_healthspike"
-            android:gravity="start"
-            tools:srcCompat="@drawable/large_healthspike"
-            android:contentDescription="@string/app_name" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:layout_width="125dp"
+                android:layout_height="73dp"
+                android:layout_marginTop="-8dp"
+                android:contentDescription="@string/app_name"
+                android:gravity="start"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/large_healthspike"
+                tools:srcCompat="@drawable/large_healthspike" />
+
+            <ImageView
+                android:id="@+id/settingsBtnImageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_baseline_settings_24" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.appcompat.widget.Toolbar>
 

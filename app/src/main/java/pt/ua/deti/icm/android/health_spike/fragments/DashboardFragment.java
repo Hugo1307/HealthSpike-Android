@@ -3,12 +3,15 @@ package pt.ua.deti.icm.android.health_spike.fragments;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,9 +35,11 @@ import java.util.List;
 import java.util.Locale;
 
 import pt.ua.deti.icm.android.health_spike.R;
+import pt.ua.deti.icm.android.health_spike.SettingsActivity;
 import pt.ua.deti.icm.android.health_spike.data.repositories.ActivityMeasurementRepository;
 import pt.ua.deti.icm.android.health_spike.viewmodels.HeartRateViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.LocationViewModel;
+import pt.ua.deti.icm.android.health_spike.viewmodels.SettingsViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.StepsViewModel;
 
 public class DashboardFragment extends Fragment {
@@ -44,6 +49,7 @@ public class DashboardFragment extends Fragment {
     private HeartRateViewModel heartRateViewModel;
     private StepsViewModel stepsViewModel;
     private LocationViewModel locationViewModel;
+    private SettingsViewModel settingsViewModel;
 
     private final List<BarEntry> chartData = new ArrayList<>();
 
@@ -54,7 +60,11 @@ public class DashboardFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
+
+        settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         return inflater.inflate(R.layout.fragment_dashboard, container, false);
+
     }
 
     @Override
@@ -65,6 +75,11 @@ public class DashboardFragment extends Fragment {
         heartRateViewModel = new ViewModelProvider(this).get(HeartRateViewModel.class);
         stepsViewModel = new ViewModelProvider(this).get(StepsViewModel.class);
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+
+        if (getContext() != null) {
+            SharedPreferences prefs = getContext().getSharedPreferences(SettingsActivity.settingsSharedPreferences, Context.MODE_PRIVATE);
+            dailyStepsGoal = prefs.getInt("Steps_Daily_Goal", 3000);
+        }
 
         setPedometerData(view);
 
@@ -82,21 +97,28 @@ public class DashboardFragment extends Fragment {
         TextView progressBarStepsLeftPlaceholder = view.findViewById(R.id.progressBarStepsLeftPlaceholder);
         ProgressBar progressBarStepsLeft = view.findViewById(R.id.progressBarStepsLeft);
 
-        Integer dailyStepsCount = stepsViewModel.getDailySteps().getValue();
+        stepsViewModel.getDailySteps().observe(getViewLifecycleOwner(), dailyStepsCount -> {
 
-        if (dailyStepsCount == null)
-            return;
+            settingsViewModel.getDailyGoal().observe(getViewLifecycleOwner(), stepsGoal -> {
 
-        mainPanelStepsCount.setText(String.valueOf(dailyStepsCount));
-        progressBarStepsLeft.setMax(dailyStepsGoal);
+                if (dailyStepsCount == null) {
+                    return;
+                }
 
-        if (dailyStepsGoal > dailyStepsCount) {
-            progressBarStepsLeftPlaceholder.setText(String.valueOf(dailyStepsGoal - dailyStepsCount));
-            progressBarStepsLeft.setProgress(dailyStepsGoal -(dailyStepsGoal - dailyStepsCount));
-        } else {
-            progressBarStepsLeftPlaceholder.setText(String.valueOf(dailyStepsCount));
-            progressBarStepsLeft.setProgress(dailyStepsGoal);
-        }
+                mainPanelStepsCount.setText(String.valueOf(dailyStepsCount));
+                progressBarStepsLeft.setMax(stepsGoal);
+
+                if (stepsGoal > dailyStepsCount) {
+                    progressBarStepsLeftPlaceholder.setText(String.valueOf(stepsGoal - dailyStepsCount));
+                    progressBarStepsLeft.setProgress(stepsGoal -(stepsGoal - dailyStepsCount));
+                } else {
+                    progressBarStepsLeftPlaceholder.setText(String.valueOf(dailyStepsCount));
+                    progressBarStepsLeft.setProgress(stepsGoal);
+                }
+
+            });
+
+        });
 
     }
 
@@ -231,7 +253,7 @@ public class DashboardFragment extends Fragment {
                     chartData.add(newBarEntry);
                 }
 
-                if (chartData.size() == maxHourOffset) {
+                if (chartData.size() >= maxHourOffset) {
                     setupActivityChart(view);
                 }
 

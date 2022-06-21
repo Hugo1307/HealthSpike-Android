@@ -159,7 +159,7 @@ public class HeartRateFragment extends Fragment {
                     chartData.add(new BarEntry((float) LocalDate.now().getDayOfMonth()-finalDayOffset+1, 0f));
                 }
 
-                if (chartData.size() == maxDayOffset) {
+                if (chartData.size() >= maxDayOffset) {
                     setupHRChart(view);
                 }
 

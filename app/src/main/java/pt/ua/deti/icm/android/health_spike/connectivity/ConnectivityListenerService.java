@@ -1,6 +1,8 @@
 package pt.ua.deti.icm.android.health_spike.connectivity;
 
 
+import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.wearable.MessageEvent;
@@ -10,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
 
+import pt.ua.deti.icm.android.health_spike.SettingsActivity;
 import pt.ua.deti.icm.android.health_spike.data.database.AppDatabase;
 import pt.ua.deti.icm.android.health_spike.data.entities.ActivityMeasurement;
 import pt.ua.deti.icm.android.health_spike.data.entities.HeartRateMeasurement;
@@ -28,6 +31,8 @@ public class ConnectivityListenerService extends WearableListenerService {
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
 
+        SharedPreferences prefs = getSharedPreferences(SettingsActivity.settingsSharedPreferences, MODE_PRIVATE);
+
         if (appDatabase == null)
             appDatabase = AppDatabase.getInstance(getApplicationContext());
 
@@ -41,8 +46,10 @@ public class ConnectivityListenerService extends WearableListenerService {
 
             if (heartRate == 0) return;
 
-            // Only send notification every 30 seconds
-            if (heartRate >= 100 && (System.currentTimeMillis() - lastHRNotificationTimestamp) > 30*1000) {
+            boolean heartMonitorEnabled = prefs.getBoolean("HR_Monitor_Enabled", true);
+            int heartMonitorCoolDown = prefs.getInt("HR_Monitor_CoolDown", 30);
+
+            if (heartMonitorEnabled && heartRate >= 100 && (System.currentTimeMillis() - lastHRNotificationTimestamp) > heartMonitorCoolDown * 1000L) {
 
                 HeartRateNotificationChannel heartRateNotificationChannel = new HeartRateNotificationChannel();
                 heartRateNotificationChannel.registerChannel(this);
@@ -64,9 +71,12 @@ public class ConnectivityListenerService extends WearableListenerService {
 
             activityMeasurementRepository.insert(new ActivityMeasurement(Date.from(Instant.now()), activityStatusId));
 
+            boolean activityMonitorEnabled = prefs.getBoolean("Activity_Monitor_Enabled", true);
+            int activityMonitorCoolDown = prefs.getInt("Activity_Monitor_CoolDown", 30);
+
             Double currentActivityIndex = activityMeasurementRepository.getCurrentActivityIndex();
 
-            if (currentActivityIndex != null && currentActivityIndex <= 1.25 && (System.currentTimeMillis() - lastBodyActivityNotificationTimestamp) > 60*60*1000) {
+            if (activityMonitorEnabled && currentActivityIndex != null && currentActivityIndex <= 1.25 && (System.currentTimeMillis() - lastBodyActivityNotificationTimestamp) > (long) activityMonitorCoolDown*60*1000) {
 
                 BodyActivityNotificationChannel bodyActivityNotificationChannel = new BodyActivityNotificationChannel();
                 bodyActivityNotificationChannel.registerChannel(this);

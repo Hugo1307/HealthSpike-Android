@@ -101,7 +101,7 @@ public class StepsFragment extends Fragment {
         stepsViewModel.getDaysOfWeekSteps().forEach((key, value) -> value.observe(getViewLifecycleOwner(), integer -> {
             chartData.add(new BarEntry(key, integer));
             // All Data was loaded
-            if (chartData.size() == 8)
+            if (chartData.size() >= 8)
                 setupStepsChart(view);
             value.removeObservers(getViewLifecycleOwner());
         }));

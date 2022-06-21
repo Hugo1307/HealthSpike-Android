@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -186,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
         initSensors();
         initBottomNavBar();
         registerTransitions();
+        registerSettingsBtnListener();
 
         // Initialize PendingIntent that will be triggered when a activity transition occurs.
         Intent intent = new Intent(TRANSITIONS_RECEIVER_ACTION);
@@ -359,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    protected LocationRequest createLocationRequest() {
+    private LocationRequest createLocationRequest() {
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(5000);
@@ -367,5 +369,11 @@ public class MainActivity extends AppCompatActivity {
         return locationRequest;
     }
 
+    private void registerSettingsBtnListener() {
+        findViewById(R.id.settingsBtnImageView).setOnClickListener(view -> {
+            Intent settingsActivityIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsActivityIntent);
+        });
+    }
 
 }
