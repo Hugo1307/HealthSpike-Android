@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +17,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.BarLineChartBase;
-import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -28,18 +25,16 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import pt.ua.deti.icm.android.health_spike.R;
 import pt.ua.deti.icm.android.health_spike.data.repositories.ActivityMeasurementRepository;
-import pt.ua.deti.icm.android.health_spike.viewmodels.DashboardViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.HeartRateViewModel;
+import pt.ua.deti.icm.android.health_spike.viewmodels.LocationViewModel;
 import pt.ua.deti.icm.android.health_spike.viewmodels.StepsViewModel;
 
 public class DashboardFragment extends Fragment {
@@ -48,6 +43,7 @@ public class DashboardFragment extends Fragment {
 
     private HeartRateViewModel heartRateViewModel;
     private StepsViewModel stepsViewModel;
+    private LocationViewModel locationViewModel;
 
     private final List<BarEntry> chartData = new ArrayList<>();
 
@@ -66,16 +62,17 @@ public class DashboardFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        DashboardViewModel mViewModel = new ViewModelProvider(requireActivity()).get(DashboardViewModel.class);
         heartRateViewModel = new ViewModelProvider(this).get(HeartRateViewModel.class);
         stepsViewModel = new ViewModelProvider(this).get(StepsViewModel.class);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
         setPedometerData(view);
 
         registerHRObservers(view);
         registerPedometerObservers(view);
+        registerLocationObservers(view);
 
-        initStepsChart(view);
+        initActivityChart(view);
 
     }
 
@@ -160,13 +157,15 @@ public class DashboardFragment extends Fragment {
 
     }
 
-    private void registerActivityObservers(View view) {
+    private void registerLocationObservers(View view) {
 
-
+        locationViewModel.getTodayDistance().observe(getViewLifecycleOwner(), todayDistance ->
+            ((TextView) view.findViewById(R.id.mainPanelDistancePlaceholder)).setText(todayDistance != null ? new DecimalFormat("#.###", new DecimalFormatSymbols(Locale.ENGLISH)).format(todayDistance/1000) : "0")
+        );
 
     }
 
-    private void setupStepsChart(View view) {
+    private void setupActivityChart(View view) {
 
         BarChart barChart = view.findViewById(R.id.activityBarChart);
         BarDataSet barDataSet = new BarDataSet(chartData, "Hourly Activity");
@@ -211,7 +210,7 @@ public class DashboardFragment extends Fragment {
 
     }
 
-    private void initStepsChart(View view) {
+    private void initActivityChart(View view) {
 
         int maxHourOffset = 6;
 
@@ -233,7 +232,7 @@ public class DashboardFragment extends Fragment {
                 }
 
                 if (chartData.size() == maxHourOffset) {
-                    setupStepsChart(view);
+                    setupActivityChart(view);
                 }
 
             });

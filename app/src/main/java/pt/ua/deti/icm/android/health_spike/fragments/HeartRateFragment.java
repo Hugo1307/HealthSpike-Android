@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 
 import pt.ua.deti.icm.android.health_spike.R;
-import pt.ua.deti.icm.android.health_spike.data.repositories.ActivityMeasurementRepository;
 import pt.ua.deti.icm.android.health_spike.data.repositories.HeartRateMeasurementRepository;
 import pt.ua.deti.icm.android.health_spike.viewmodels.HeartRateViewModel;
 
@@ -63,7 +62,7 @@ public class HeartRateFragment extends Fragment {
         setHRData(view);
         registerObservers(view);
 
-        initStepsChart(view);
+        initHRChart(view);
 
     }
 
@@ -106,7 +105,7 @@ public class HeartRateFragment extends Fragment {
 
     }
 
-    private void setupStepsChart(View view) {
+    private void setupHRChart(View view) {
 
         BarChart barChart = view.findViewById(R.id.heartRateBarChart);
         BarDataSet barDataSet = new BarDataSet(chartData, "Heart Rate Average");
@@ -145,9 +144,9 @@ public class HeartRateFragment extends Fragment {
 
     }
 
-    private void initStepsChart(View view) {
+    private void initHRChart(View view) {
 
-        int maxDayOffset = 6;
+        int maxDayOffset = 8;
 
         for (int dayOffset = 1; dayOffset <= maxDayOffset; dayOffset++) {
 
@@ -161,7 +160,7 @@ public class HeartRateFragment extends Fragment {
                 }
 
                 if (chartData.size() == maxDayOffset) {
-                    setupStepsChart(view);
+                    setupHRChart(view);
                 }
 
             });
