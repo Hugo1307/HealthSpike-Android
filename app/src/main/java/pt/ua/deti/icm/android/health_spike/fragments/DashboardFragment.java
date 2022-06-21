@@ -220,10 +220,16 @@ public class DashboardFragment extends Fragment {
             int finalHourOffset = hourOffset;
             ActivityMeasurementRepository.getInstance(view.getContext()).getHourlyAverage(finalHourOffset).observe(getViewLifecycleOwner(), value -> {
 
+                BarEntry newBarEntry;
+
                 if (value != null) {
-                    chartData.add(new BarEntry((float) finalHourOffset, value.floatValue()));
+                    newBarEntry = new BarEntry((float) finalHourOffset, value.floatValue());
                 } else {
-                    chartData.add(new BarEntry((float) finalHourOffset, 0f));
+                    newBarEntry = new BarEntry((float) finalHourOffset, 0f);
+                }
+
+                if (!chartData.contains(newBarEntry)) {
+                    chartData.add(newBarEntry);
                 }
 
                 if (chartData.size() == maxHourOffset) {

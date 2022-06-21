@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -12,16 +13,29 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import pt.ua.deti.icm.android.health_spike.R;
+import pt.ua.deti.icm.android.health_spike.data.repositories.ActivityMeasurementRepository;
+import pt.ua.deti.icm.android.health_spike.data.repositories.HeartRateMeasurementRepository;
 import pt.ua.deti.icm.android.health_spike.viewmodels.HeartRateViewModel;
 
 public class HeartRateFragment extends Fragment {
 
     private HeartRateViewModel heartRateViewModel;
+
+    private final List<BarEntry> chartData = new ArrayList<>();
 
     public HeartRateFragment() { }
 
@@ -48,6 +62,8 @@ public class HeartRateFragment extends Fragment {
 
         setHRData(view);
         registerObservers(view);
+
+        initStepsChart(view);
 
     }
 
@@ -87,6 +103,70 @@ public class HeartRateFragment extends Fragment {
         heartRateViewModel.getAverageHeartRate().observe(getViewLifecycleOwner(), avgHeartRate ->
                 ((TextView) view.findViewById(R.id.avgHeartRatePlaceholder)).setText(avgHeartRate != null ? new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ENGLISH)).format(avgHeartRate) : "0.0")
         );
+
+    }
+
+    private void setupStepsChart(View view) {
+
+        BarChart barChart = view.findViewById(R.id.heartRateBarChart);
+        BarDataSet barDataSet = new BarDataSet(chartData, "Heart Rate Average");
+        BarData barData = new BarData(barDataSet);
+
+        barChart.setClickable(false);
+        barChart.setDoubleTapToZoomEnabled(false);
+        barChart.setPinchZoom(false);
+        barChart.setScaleEnabled(false);
+
+        barChart.getXAxis().setDrawGridLines(false);
+        barChart.getAxisLeft().setDrawGridLines(false);
+        barChart.getAxisRight().setDrawGridLines(false);
+
+        barChart.getXAxis().setDrawAxisLine(true);
+        barChart.getAxisLeft().setDrawAxisLine(false);
+        barChart.getAxisRight().setDrawAxisLine(false);
+
+        barChart.getXAxis().setDrawLabels(true);
+        barChart.getAxisLeft().setDrawLabels(false);
+        barChart.getAxisRight().setDrawLabels(false);
+
+        barChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        barChart.setData(barData);
+        barChart.setDrawGridBackground(false);
+
+        barChart.getDescription().setEnabled(false);
+        barChart.getLegend().setEnabled(false);
+
+        barDataSet.setColor(ContextCompat.getColor(view.getContext(), R.color.primary_red));
+        barDataSet.setDrawValues(true);
+
+        barChart.notifyDataSetChanged();
+        barChart.invalidate();
+
+    }
+
+    private void initStepsChart(View view) {
+
+        int maxDayOffset = 6;
+
+        for (int dayOffset = 1; dayOffset <= maxDayOffset; dayOffset++) {
+
+            int finalDayOffset = dayOffset;
+            HeartRateMeasurementRepository.getInstance(view.getContext()).getDailyAverageHeartRate(finalDayOffset).observe(getViewLifecycleOwner(), value -> {
+
+                if (value != null) {
+                    chartData.add(new BarEntry((float) LocalDate.now().getDayOfMonth()-finalDayOffset+1, value.floatValue()));
+                } else {
+                    chartData.add(new BarEntry((float) LocalDate.now().getDayOfMonth()-finalDayOffset+1, 0f));
+                }
+
+                if (chartData.size() == maxDayOffset) {
+                    setupStepsChart(view);
+                }
+
+            });
+
+        }
 
     }
 

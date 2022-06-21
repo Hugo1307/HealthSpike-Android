@@ -17,7 +17,7 @@ public class HeartRateMeasurementRepository {
         this.heartRateMeasurementDao = AppDatabase.getInstance(context).heartRateMeasurementDao();
     }
 
-    private LiveData<Double> getDailyAverageHeartRate(int dayOffset) {
+    public LiveData<Double> getDailyAverageHeartRate(int dayOffset) {
         return heartRateMeasurementDao.getLiveDailyAverage(dayOffset, dayOffset-1);
     }
 
